@@ -1,0 +1,7 @@
+test_id,segment_id,airflow_cm_s,fan_display,spread_rate_mm_s,t_start_s,t_end_s,o2_initial_pct,o2_final_pct,o2_segment_mean_pct,o2_basis,fan_mapping_status,source
+M7,1,10.0,,0.106,,,18.9,18.4,,estimated_pending,not_resolved,"NASA BASS-II Summary Report, Table 5.1 and Appendix A.4"
+M7,2,6.0,,0.099,,,18.9,18.4,,estimated_pending,not_resolved,"NASA BASS-II Summary Report, Table 5.1 and Appendix A.4"
+M7,3,5.0,,0.083,,,18.9,18.4,,estimated_pending,not_resolved,"NASA BASS-II Summary Report, Table 5.1 and Appendix A.4"
+M7,4,4.5,,,,,18.9,18.4,,estimated_pending,not_resolved,"NASA BASS-II Summary Report, Appendix A.4; no separate spread rate in Table 5.1"
+M7,5,4.0,,,,,18.9,18.4,,estimated_pending,not_resolved,"NASA BASS-II Summary Report, Appendix A.4; no separate spread rate in Table 5.1"
+M7,6,3.0,,0.07,,,18.9,18.4,,estimated_pending,not_resolved,"NASA BASS-II Summary Report, Table 5.1 and Appendix A.4"

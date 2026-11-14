@@ -1,0 +1,2 @@
+usable_rows,unique_experiments,features,MAE_mm_s,RMSE_mm_s,R2,baseline_MAE_mm_s
+39,18,"thickness_mm, width_cm, burning_sides, airflow_cm_s, initial_o2_pct",0.019495260823545985,0.026749031557266403,0.2554497968690923,0.02455909067411084

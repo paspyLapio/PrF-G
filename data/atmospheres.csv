@@ -1,0 +1,7 @@
+key,environment,o2_pct,o2_value_type,pressure_psia,pressure_kpa,ppo2_psia,ppo2_kpa,source,notes
+earth_sea_level,Earth sea level (reference),20.9,nominal,14.7,101.4,3.072,21.18,reference only,
+iss,ISS interior,24.1,maximum,14.5,100.0,3.495,24.09,"NASA standards (standards.nasa.gov, via team research)",ISS nominal is near Earth air; 24.1% is the stated maximum
+shuttle_mpcv_gateway,Shuttle / MPCV (Orion) / Gateway and similar,30.0,maximum,10.2,70.3,3.06,21.1,"NASA standards (standards.nasa.gov, via team research)",Also a standard materials test environment (NASA-STD-6001 Test 1)
+artemis_iii,Artemis III,30.0,maximum,9.6,66.2,2.88,19.86,"NASA standards (standards.nasa.gov, via team research)",
+lunar_mars_surface,Future lunar / Mars surface habitats,33.7,minimum,8.2,56.5,2.763,19.05,"NASA standards (standards.nasa.gov, via team research)",Minimum for a specific design; nominal and maximum depend on tolerances
+surface_design_upper,Future habitat design range (upper),40.0,design range 36-40%,8.2,56.5,3.28,22.61,"NASA standards (standards.nasa.gov, via team research)","Design region, not a universal operating limit"

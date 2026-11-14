@@ -1,0 +1,182 @@
+{
+ "atm": [
+  {
+   "key": "earth_sea_level",
+   "env": "Earth sea level (reference)",
+   "short": "Earth air",
+   "o2": 20.9,
+   "psia": 14.7
+  },
+  {
+   "key": "iss",
+   "env": "ISS interior",
+   "short": "ISS max",
+   "o2": 24.1,
+   "psia": 14.5
+  },
+  {
+   "key": "shuttle_mpcv_gateway",
+   "env": "Shuttle / MPCV (Orion) / Gateway and similar",
+   "short": "Orion / Gateway",
+   "o2": 30.0,
+   "psia": 10.2
+  },
+  {
+   "key": "artemis_iii",
+   "env": "Artemis III",
+   "short": "Artemis III",
+   "o2": 30.0,
+   "psia": 9.6
+  },
+  {
+   "key": "lunar_mars_surface",
+   "env": "Future lunar / Mars surface habitats",
+   "short": "Lunar habitat",
+   "o2": 33.7,
+   "psia": 8.2
+  },
+  {
+   "key": "surface_design_upper",
+   "env": "Future habitat design range (upper)",
+   "short": "Habitat upper",
+   "o2": 40.0,
+   "psia": 8.2
+  }
+ ],
+ "bands": [
+  {
+   "p": "o2_pct",
+   "a": 0.0,
+   "b": 20.9,
+   "i": "Earth air or below",
+   "c": "reference"
+  },
+  {
+   "p": "o2_pct",
+   "a": 20.9,
+   "b": 24.1,
+   "i": "Near usual spacecraft atmospheres (ISS max 24.1%)",
+   "c": "reference"
+  },
+  {
+   "p": "o2_pct",
+   "a": 24.1,
+   "b": 30.0,
+   "i": "Elevated vs reference",
+   "c": "elevated"
+  },
+  {
+   "p": "o2_pct",
+   "a": 30.0,
+   "b": 33.7,
+   "i": "Elevated: assess for the specific cabin design",
+   "c": "elevated"
+  },
+  {
+   "p": "o2_pct",
+   "a": 33.7,
+   "b": 36.0,
+   "i": "Exploration-atmosphere region (surface habitats)",
+   "c": "high"
+  },
+  {
+   "p": "o2_pct",
+   "a": 36.0,
+   "b": 40.0,
+   "i": "High design region: stricter flammability control needed",
+   "c": "high"
+  },
+  {
+   "p": "o2_pct",
+   "a": 40.0,
+   "b": 100.0,
+   "i": "Outside the reference range: needs specific justification",
+   "c": "outside_reference"
+  },
+  {
+   "p": "pressure_psia",
+   "a": 0.0,
+   "b": 5.0,
+   "i": "Below unlimited crew-exposure range (human limit, not fire limit)",
+   "c": "outside_reference"
+  },
+  {
+   "p": "pressure_psia",
+   "a": 5.0,
+   "b": 8.2,
+   "i": "Within crew-exposure range, below habitat design points",
+   "c": "check_design"
+  },
+  {
+   "p": "pressure_psia",
+   "a": 8.2,
+   "b": 14.7,
+   "i": "Range of spacecraft and habitat design points",
+   "c": "reference"
+  },
+  {
+   "p": "pressure_psia",
+   "a": 14.7,
+   "b": 15.0,
+   "i": "Within crew-exposure range",
+   "c": "check_design"
+  },
+  {
+   "p": "pressure_psia",
+   "a": 15.0,
+   "b": 100.0,
+   "i": "Above unlimited crew-exposure range",
+   "c": "outside_reference"
+  },
+  {
+   "p": "airflow_cms",
+   "a": 0.0,
+   "b": 0.0001,
+   "i": "Still air: does NOT mean no combustion",
+   "c": "sensitive"
+  },
+  {
+   "p": "airflow_cms",
+   "a": 0.0001,
+   "b": 1.0,
+   "i": "Dim, steady flames observed to persist (BASS-II)",
+   "c": "sensitive"
+  },
+  {
+   "p": "airflow_cms",
+   "a": 1.0,
+   "b": 5.0,
+   "i": "High flame sensitivity to flow changes (BASS-II)",
+   "c": "sensitive"
+  },
+  {
+   "p": "airflow_cms",
+   "a": 5.0,
+   "b": 20.0,
+   "i": "Tested experimentally: assess per material and flow direction",
+   "c": "assess_per_material"
+  },
+  {
+   "p": "airflow_cms",
+   "a": 20.0,
+   "b": 30.0,
+   "i": "Saffire test flows",
+   "c": "assess_per_material"
+  },
+  {
+   "p": "airflow_cms",
+   "a": 30.0,
+   "b": 53.0,
+   "i": "Covered by some BASS-II hardware descriptions",
+   "c": "assess_per_material"
+  },
+  {
+   "p": "airflow_cms",
+   "a": 53.0,
+   "b": 1000.0,
+   "i": "Outside BASS-II hardware range",
+   "c": "outside_reference"
+  }
+ ],
+ "cert": "NASA-STD-6001B Test 1 (1g upward flame): pass if burn length < 15.2 cm with no burning debris; 30% O2 at 10.2 psia is a cited test atmosphere. A 1g result does not show microgravity behavior."
+}

@@ -1,0 +1,442 @@
+<title>Halo Fire Margin</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: mission console. Header with three views (engineer / crew / evidence); each view is a controls rail + result panels. */
+:root{
+  --bg:#EEF1F4;--surface:#FFFFFF;--surface-2:#F5F7FA;--ink:#111A22;--muted:#5B6875;--line:#D5DCE3;
+  --accent:#2B4FD8;--accent-soft:#E3E9FF;
+  --ok:#1F7A4D;--ok-soft:#DFF3E8;--warn:#9A5B00;--warn-soft:#FCEFD6;--bad:#B42318;--bad-soft:#FDE4E1;--unk:#5B4BB0;--unk-soft:#ECE8FB;
+  --f-display:"Archivo","Helvetica Neue",Arial,sans-serif;--f-body:"IBM Plex Sans",system-ui,-apple-system,sans-serif;--f-mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0E141A;--surface:#151D25;--surface-2:#1B252F;--ink:#E6ECF1;--muted:#94A3B1;--line:#2A3642;--accent:#7C97FF;--accent-soft:#1E2850;
+  --ok:#5CC98F;--ok-soft:#12301F;--warn:#F0B34A;--warn-soft:#33260C;--bad:#FF7A6B;--bad-soft:#3A1512;--unk:#B3A6FF;--unk-soft:#241E45;color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0E141A;--surface:#151D25;--surface-2:#1B252F;--ink:#E6ECF1;--muted:#94A3B1;--line:#2A3642;--accent:#7C97FF;--accent-soft:#1E2850;
+  --ok:#5CC98F;--ok-soft:#12301F;--warn:#F0B34A;--warn-soft:#33260C;--bad:#FF7A6B;--bad-soft:#3A1512;--unk:#B3A6FF;--unk-soft:#241E45;color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:15px/1.5 var(--f-body);padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 40px}
+h1,h2,h3{font-family:var(--f-display);margin:0;text-wrap:balance;letter-spacing:-0.01em}
+h2{font-size:18px;font-weight:700}h3{font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.mono,.num{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+button,select,input{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.wrap{max-width:1240px;margin:0 auto}
+header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px 24px;padding-block:20px 14px;border-bottom:1px solid var(--line);margin-bottom:18px}
+.brand{display:flex;align-items:center;gap:12px}
+.brand svg{flex:none}
+.brand h1{font-size:26px;font-weight:700}
+.brand p{margin:0;color:var(--muted);font-size:13px}
+nav{display:flex;gap:4px;flex-wrap:wrap}
+nav a{padding:8px 14px;border-radius:8px;text-decoration:none;color:var(--muted);font-weight:500;font-size:14px;border:1px solid transparent}
+nav a[aria-current="page"]{background:var(--surface);color:var(--ink);border-color:var(--line)}
+nav a small{display:block;font-size:11px;letter-spacing:.06em;text-transform:uppercase;font-weight:500;opacity:.8}
+.grid{display:grid;gap:16px;grid-template-columns:300px minmax(0,1fr)}
+.grid3{display:grid;gap:16px;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr) minmax(0,1fr)}
+@media (max-width:1000px){.grid3{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}}
+@media (max-width:760px){.grid,.grid3{grid-template-columns:minmax(0,1fr)}}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;min-width:0}
+.stack{display:flex;flex-direction:column;gap:16px;min-width:0}
+.field{display:flex;flex-direction:column;gap:4px;margin-top:12px}
+.field label{font-size:12px;color:var(--muted);display:flex;justify-content:space-between;gap:8px}
+.field label .num{color:var(--ink)}
+select,input[type=number]{background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:7px 9px;width:100%}
+input[type=range]{width:100%;accent-color:var(--accent)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-size:12px;padding:3px 9px;border-radius:999px;border:1px solid var(--line);background:var(--surface-2);white-space:nowrap}
+.btn{border:1px solid var(--line);background:var(--surface-2);border-radius:8px;padding:6px 11px;font-size:13px;font-weight:500}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--surface)}
+.pill{display:inline-block;font-size:12px;font-weight:600;padding:3px 10px;border-radius:6px;letter-spacing:.02em}
+.s-ok{background:var(--ok-soft);color:var(--ok)}.s-warn{background:var(--warn-soft);color:var(--warn)}.s-bad{background:var(--bad-soft);color:var(--bad)}.s-unk{background:var(--unk-soft);color:var(--unk)}.s-acc{background:var(--accent-soft);color:var(--accent)}
+.verdict{display:flex;gap:14px;align-items:flex-start;border-left:4px solid var(--unk);padding-left:14px;border-radius:0}
+.verdict.ok{border-color:var(--ok)}.verdict.warn{border-color:var(--warn)}.verdict.bad{border-color:var(--bad)}
+.verdict h2{font-size:20px}
+.verdict p{margin:4px 0 0;color:var(--muted)}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-top:14px}
+.tile{background:var(--surface-2);border-radius:8px;padding:10px 12px}
+.tile .l{font-size:12px;color:var(--muted)}.tile .v{font-family:var(--f-mono);font-size:20px;font-weight:500}.tile .s{font-size:12px;color:var(--muted)}
+.list{display:flex;flex-direction:column}
+.row{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-top:1px solid var(--line);font-size:13.5px}
+.row:first-child{border-top:0}
+.row .r{color:var(--muted);text-align:right;flex:none;max-width:48%}
+.why{font-size:12.5px;color:var(--muted);background:var(--surface-2);border-radius:8px;padding:10px;margin-top:8px}
+.why a{color:var(--accent)}
+.note{font-size:12px;color:var(--muted)}
+.mapbox{overflow-x:auto}
+svg text{font-family:var(--f-mono)}
+.banner{display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px;padding:12px 16px;border-radius:10px;margin-bottom:16px;border:1px solid var(--line);background:var(--surface)}
+.banner.EMERGENCY{background:var(--bad-soft);border-color:var(--bad)}
+.banner.CAUTION{background:var(--warn-soft);border-color:var(--warn)}
+.banner .mode{font-family:var(--f-display);font-weight:700;font-size:20px;letter-spacing:.04em}
+.banner.EMERGENCY .mode{color:var(--bad)}.banner.CAUTION .mode{color:var(--warn)}.banner.NORMAL .mode{color:var(--ok)}
+.controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-left:auto}
+.controls select{width:auto}
+.spark{display:grid;grid-template-columns:110px minmax(0,1fr) 78px;align-items:center;gap:10px;padding:6px 0;border-top:1px solid var(--line)}
+.spark:first-child{border-top:0}
+.spark .n{font-size:12px;color:var(--muted)}.spark .v{font-family:var(--f-mono);text-align:right;font-size:14px}
+.opt{border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin-top:10px;background:var(--surface-2)}
+.opt .t{font-weight:600;font-size:14px}.opt .e{font-size:12.5px;color:var(--muted);margin:3px 0 8px}
+.opt .acts{display:flex;gap:6px;flex-wrap:wrap}
+.log{max-height:260px;overflow:auto;font-size:12.5px}
+.log .row{font-size:12.5px}
+.tag{font-family:var(--f-mono);font-size:11px;padding:1px 6px;border-radius:4px;flex:none}
+.tablebox{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:12.5px}
+th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:600;white-space:nowrap}
+td.num{white-space:nowrap}
+.rank{display:grid;grid-template-columns:34px minmax(0,1fr) 70px;gap:10px;padding:10px 0;border-top:1px solid var(--line);align-items:start}
+.rank:first-child{border-top:0}
+.rank .k{font-family:var(--f-mono);font-size:18px;color:var(--muted)}
+.rank .sc{font-family:var(--f-mono);text-align:right}
+.rank .d{font-size:12.5px;color:var(--muted)}
+.bar{height:6px;border-radius:3px;background:var(--line);margin-top:6px;overflow:hidden}.bar i{display:block;height:100%;background:var(--accent)}
+.sim{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--warn)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<div class="wrap">
+<header>
+  <div class="brand">
+    <svg width="40" height="40" viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="17" fill="none" stroke="var(--accent)" stroke-width="2"/><circle cx="20" cy="20" r="9" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.5"/><circle cx="20" cy="20" r="3.5" fill="var(--accent)"/></svg>
+    <div><h1>Halo</h1><p>Fire margin from NASA microgravity flight data · <span id="dataCount"></span></p></div>
+  </div>
+  <nav aria-label="Views">
+    <a href="#engineer" data-v="engineer"><small>Before launch</small>Material explorer</a>
+    <a href="#crew" data-v="crew"><small>After launch</small>Crew assistant</a>
+    <a href="#evidence" data-v="evidence"><small>Evidence base</small>Investigations</a>
+  </nav>
+</header>
+
+<!-- ============ ENGINEER ============ -->
+<section id="v-engineer" hidden>
+<div class="grid">
+  <div class="panel" style="align-self:start">
+    <h3>Conditions</h3>
+    <div class="field"><label for="e-mat">Material</label><select id="e-mat"></select></div>
+    <div class="field"><label>Habitat preset</label><div class="chips" id="e-presets"></div></div>
+    <div class="field"><label for="e-o2">Oxygen <span class="num" id="e-o2v"></span></label><input id="e-o2" type="range" min="14" max="45" step="0.1" value="21"></div>
+    <div class="field"><label for="e-p">Total pressure <span class="num" id="e-pv"></span></label><input id="e-p" type="range" min="5" max="15" step="0.1" value="14.5"></div>
+    <div class="field"><label for="e-u">Airflow <span class="num" id="e-uv"></span></label><input id="e-u" type="range" min="0" max="40" step="0.5" value="10"></div>
+    <div class="field"><label for="e-cfg">Flow direction vs flame</label><select id="e-cfg"><option value="opposed">Opposed (air against the flame)</option><option value="concurrent">Concurrent (air with the flame)</option></select></div>
+    <div class="field"><label for="e-t">Thickness <span class="num" id="e-tv"></span></label><input id="e-t" type="range" min="0.1" max="10" step="0.1" value="2"></div>
+    <div class="field"><label for="e-s">Exposed sides</label><select id="e-s"><option value="two">Both sides can burn</option><option value="one">One side (backed)</option></select></div>
+    <div class="field"><label for="e-g">Gravity</label><select id="e-g"><option value="micro">Microgravity (spacecraft, station)</option><option value="lunar">Lunar surface (1.62 m/s²)</option><option value="mars">Mars surface (3.71 m/s²)</option></select></div>
+  </div>
+  <div class="stack">
+    <div class="panel">
+      <div class="verdict" id="e-verdict"></div>
+      <div class="tiles" id="e-tiles"></div>
+      <div class="field" style="margin-top:14px"><label>Screening (app classification, not an official NASA scale)</label><div class="chips" id="e-screen"></div></div>
+    </div>
+    <div class="panel">
+      <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:baseline"><h3>Flight evidence map</h3><span class="note" id="e-maplegend"></span></div>
+      <div class="mapbox"><svg id="e-map" viewBox="0 0 720 300" style="width:100%;min-width:520px" role="img" aria-label="Flight runs for this material by oxygen and airflow"></svg></div>
+    </div>
+    <div class="grid3" style="grid-template-columns:minmax(0,1fr) minmax(0,1fr)">
+      <div class="panel"><h3>Fixes and next steps</h3><div class="list" id="e-fixes" style="margin-top:8px"></div></div>
+      <div class="panel"><h3>Nearest flight runs</h3><div class="list" id="e-near" style="margin-top:8px"></div></div>
+    </div>
+    <div class="panel"><h3>Material profile</h3><div id="e-profile" style="margin-top:8px"></div></div>
+  </div>
+</div>
+</section>
+
+<!-- ============ CREW ============ -->
+<section id="v-crew" hidden>
+<div class="banner NORMAL" id="c-banner">
+  <div><div class="sim">Simulated telemetry · real flight evidence</div><div class="mode" id="c-mode">NORMAL</div></div>
+  <div class="note" id="c-modewhy" style="max-width:420px"></div>
+  <div class="controls">
+    <select id="c-preset" aria-label="Habitat"></select>
+    <select id="c-scn" aria-label="Scenario"></select>
+    <button class="btn primary" id="c-play">Pause</button>
+    <button class="btn" id="c-reset">Reset</button>
+    <span class="mono" id="c-clock">T+00:00</span>
+  </div>
+</div>
+<div class="grid3">
+  <div class="stack">
+    <div class="panel"><h3>Fire margin</h3><div class="verdict" id="c-margin" style="margin-top:10px"></div><div class="list" id="c-mats" style="margin-top:12px"></div></div>
+  </div>
+  <div class="stack">
+    <div class="panel"><h3>Cabin telemetry</h3><div id="c-tel" style="margin-top:6px"></div><div class="note" style="margin-top:8px">Detection thresholds are placeholders until set from NASA SMAC tables and detector specs.</div></div>
+    <div class="panel"><h3>Atmosphere screening</h3><div class="chips" id="c-screen" style="margin-top:8px"></div></div>
+  </div>
+  <div class="stack">
+    <div class="panel"><h3>Options for the crew</h3><div id="c-opts"></div></div>
+    <div class="panel"><h3>Decision log</h3><div class="log list" id="c-log" style="margin-top:6px"></div></div>
+  </div>
+</div>
+</section>
+
+<!-- ============ EVIDENCE ============ -->
+<section id="v-evidence" hidden>
+<div class="grid">
+  <div class="stack" style="align-self:start">
+    <div class="panel">
+      <h3>Rank investigations for</h3>
+      <div class="field"><select id="r-env" aria-label="Environment"></select></div>
+      <div class="field"><select id="r-q" aria-label="Question"><option value="burn">Will a material keep burning, and how fast?</option><option value="detect">How early can we detect a fire?</option><option value="suppress">How do we put it out?</option></select></div>
+      <p class="note">Score = relevance to the question + direct NASA fire-safety relevance + transcribed flight runs + how close the tested oxygen is to this environment. Each part is shown.</p>
+    </div>
+    <div class="panel"><h3>Test-next list</h3><div class="list" id="r-next" style="margin-top:8px"></div></div>
+  </div>
+  <div class="stack">
+    <div class="panel"><h3>Ranked investigations</h3><div id="r-list" style="margin-top:6px"></div></div>
+    <div class="panel">
+      <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center"><h3>Flight runs in comparable variables</h3><select id="r-fam" style="width:auto" aria-label="Material family"></select></div>
+      <div class="tablebox" style="margin-top:10px"><table id="r-runs"></table></div>
+    </div>
+  </div>
+</div>
+</section>
+</div>
+
+<script>
+const D = __DATA__;
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const KPA=6.89476, f1=x=>(+x).toFixed(1), f2=x=>(+x).toFixed(2);
+const GP=__GP__;
+function gpPredict(te,o2){const z=[(Math.log(te)-GP.mu[0])/GP.sd[0],(o2-GP.mu[1])/GP.sd[1]];const k=GP.Z.map(r=>GP.c*Math.exp(-0.5*(((r[0]-z[0])/GP.ls[0])**2+((r[1]-z[1])/GP.ls[1])**2)));
+  let m=0,q=0;for(let i=0;i<k.length;i++){m+=k[i]*GP.alpha[i];let s=0;const row=GP.Kinv[i];for(let j=0;j<k.length;j++)s+=row[j]*k[j];q+=k[i]*s}
+  return{mu:GP.ym+GP.ys*m,sd:Math.sqrt(Math.max(0,GP.c-q+GP.noise))*GP.ys}}
+const gpv=(te,o2)=>Math.exp(gpPredict(te,o2).mu);
+const MODEL={err:GP.err,fam:"pmma",cfg:"opposed",dom:{te:[0.5,5],o2:[17,22.5],u:[2,21],p:[97,103]}};
+const FAMKEY={sibal:"sibal_fabric",cotton_jersey:"cotton_fabric",pmma:"pmma",pmma_structured:"pmma_structured",nomex:"nomex_fabric",silicone:"silicone",nomex_ht90_40:"nomex_ht90_fabric",ultem_1000:"ultem_film",mylar_g:"mylar_film"};
+const runsOf=fam=>D.runs.filter(r=>r.fam===fam);
+const isBurn=r=>r.sus==="yes", isNo=r=>r.sus==="no";
+
+function band(param,v){const b=D.bands.find(x=>x.p===param&&v>=x.a&&v<x.b)||D.bands.filter(x=>x.p===param).slice(-1)[0];return b}
+const CLS={reference:"s-ok",check_design:"s-acc",elevated:"s-warn",high:"s-bad",outside_reference:"s-bad",sensitive:"s-warn",assess_per_material:"s-acc"};
+function screenChips(o2,psia,u,g){
+  const out=[];
+  const bo=band("o2_pct",o2),bp=band("pressure_psia",psia),bu=band("airflow_cms",u);
+  out.push(`<span class="chip ${CLS[bo.c]}" title="${esc(bo.i)}">O₂ ${f1(o2)}%: ${esc(bo.i)}</span>`);
+  out.push(`<span class="chip ${CLS[bp.c]}" title="${esc(bp.i)}">${f1(psia)} psia: ${esc(bp.i)}</span>`);
+  out.push(`<span class="chip ${CLS[bu.c]}" title="${esc(bu.i)}">${f1(u)} cm/s: ${esc(bu.i)}</span>`);
+  out.push(`<span class="chip s-acc">ppO₂ ${f2(o2/100*psia*KPA)} kPa</span>`);
+  if(g!=="micro")out.push(`<span class="chip s-unk">No partial-gravity data in PSI: microgravity and 1g act as bounds</span>`);
+  return out.join("");
+}
+function predict(te,o2,u,pk){const d=MODEL.dom;const why=[];
+  if(te<d.te[0]||te>d.te[1])why.push("heated thickness");if(o2<d.o2[0]||o2>d.o2[1])why.push("oxygen");if(u<d.u[0]||u>d.u[1])why.push("airflow");if(pk<d.p[0]||pk>d.p[1])why.push("pressure");
+  if(why.length)return{ok:false,why};const g=gpPredict(te,o2);return{ok:true,v:Math.exp(g.mu),lo:Math.exp(g.mu-g.sd),hi:Math.exp(g.mu+g.sd)}}
+function nearest(fam,o2,pk,u,n=5){
+  return runsOf(fam).filter(r=>r.o2!=null).map(r=>{const dd=Math.hypot((r.o2-o2)/3,((r.u??u)-u)/10,r.p!=null?(r.p-pk)/20:0.5);return{r,d:dd}}).sort((a,b)=>a.d-b.d).slice(0,n)}
+function maxO2(fam){const xs=runsOf(fam).filter(r=>r.o2!=null&&r.sus!=="").map(r=>r.o2);return xs.length?Math.max(...xs):null}
+function runLine(r){const parts=[];if(r.o2!=null)parts.push(f1(r.o2)+"% O₂");if(r.p!=null)parts.push(f1(r.p)+" kPa");if(r.u!=null)parts.push(r.u+" cm/s");if(r.cfg)parts.push(r.cfg);
+  const res=r.v!=null?`spread ${r.v} mm/s`:esc(r.out);return `<div class="row"><span><b>${esc(r.inv)} ${esc(r.id)}${r.seg>1?" · seg "+r.seg:""}</b><br><span class="note">${esc(r.mat)}${r.t!=null?" · "+r.t+" mm":""} · ${parts.join(" · ")}</span></span><span class="r">${res}<br><span class="note">${esc(r.q)}</span></span></div>`}
+let testNext=[];try{testNext=JSON.parse(localStorage.getItem("halo-next")||"[]")}catch(e){}
+function saveNext(){try{localStorage.setItem("halo-next",JSON.stringify(testNext))}catch(e){}renderNext()}
+function renderNext(){const el=$("r-next");el.innerHTML=testNext.length?testNext.map((t,i)=>`<div class="row"><span>${esc(t)}</span><button class="btn" data-rm="${i}" aria-label="Remove">Remove</button></div>`).join(""):'<p class="note">Untested conditions you flag in the material explorer appear here, as candidates for future flights such as LUCI and FM2.</p>';
+  el.querySelectorAll("[data-rm]").forEach(b=>b.onclick=()=>{testNext.splice(+b.dataset.rm,1);saveNext()})}
+
+/* ===================== ENGINEER ===================== */
+const E={};
+function initEngineer(){
+  const sel=$("e-mat");const groups={A:"Burned in microgravity",B:"Smoke tests only",C:"Flown, no microgravity test found"};
+  sel.innerHTML=Object.entries(groups).map(([k,g])=>`<optgroup label="${g}">`+D.mats.filter(m=>m.cat===k).map(m=>`<option value="${m.key}">${esc(m.name)}</option>`).join("")+"</optgroup>").join("");
+  sel.value="pmma";
+  $("e-presets").innerHTML=D.atm.map(a=>`<button class="btn" data-a="${a.key}" title="${esc(a.env)}">${esc(a.short)}</button>`).join("");
+  $("e-presets").querySelectorAll("button").forEach(b=>b.onclick=()=>{const a=D.atm.find(x=>x.key===b.dataset.a);$("e-o2").value=a.o2;$("e-p").value=a.psia;$("e-g").value=a.key.includes("lunar")||a.key.includes("surface")?"lunar":"micro";renderE()});
+  ["e-mat","e-o2","e-p","e-u","e-cfg","e-t","e-s","e-g"].forEach(id=>$(id).addEventListener("input",renderE));
+  renderE();
+}
+function renderE(){
+  const m=D.mats.find(x=>x.key===$("e-mat").value), fam=FAMKEY[m.key];
+  const o2=+$("e-o2").value, psia=+$("e-p").value, pk=psia*KPA, u=+$("e-u").value, cfg=$("e-cfg").value, t=+$("e-t").value, sides=$("e-s").value, g=$("e-g").value;
+  const te=sides==="two"?t/2:t;
+  $("e-o2v").textContent=f1(o2)+"%";$("e-pv").textContent=f1(psia)+" psia · "+f1(pk)+" kPa";$("e-uv").textContent=f1(u)+" cm/s";$("e-tv").textContent=f1(t)+" mm";
+  $("e-screen").innerHTML=screenChips(o2,psia,u,g);
+  const runs=fam?runsOf(fam):[];const mx=fam?maxO2(fam):null;
+  let V={cls:"",pill:"",title:"",text:""},tiles=[],fixes=[];
+  const modelCase=fam===MODEL.fam&&cfg===MODEL.cfg&&g==="micro";
+  const pr=modelCase?predict(te,o2,u,pk):null;
+  if(m.cat==="C"){V={cls:"bad",pill:'<span class="pill s-bad">No flight evidence</span>',title:`${m.name}: no microgravity test found`,text:"This material has flown on crewed spacecraft, but our evidence base has no microgravity burn or smoke test for it. The tool gives no prediction."};
+    fixes.push(["Request a microgravity flammability test","Adds this material to the test-next list"]);}
+  else if(m.cat==="B"){V={cls:"warn",pill:'<span class="pill s-warn">Smoke data only</span>',title:`${m.name}: smoke evidence, no burn evidence`,text:"This material was heated below ignition in SAME / SAME-R to study its smoke. That says how detectable its overheating is, not whether it would keep burning."};
+    tiles.push(["Smoke finding",m.ev,""]);fixes.push(["Use it in the detection layer","Smoke particle size decides which detector sees it"],["Request a burn test","Adds to the test-next list"]);}
+  else if(pr&&pr.ok){V={cls:"ok",pill:'<span class="pill s-ok">Supported by flight data</span>',title:`Predicted spread ${pr.v.toFixed(3)} mm/s`,text:`Gaussian process fitted on 39 BASS-II segments from 18 PMMA slab tests. Held-out tests are predicted within about ×${MODEL.err.toFixed(2)} typically. Likely range ${pr.lo.toFixed(3)} to ${pr.hi.toFixed(3)} mm/s.`};
+    tiles.push(["Flame travel in 10 min",f1(pr.v*60)+" cm","at the predicted rate"],["Highest flight O₂, this material",mx!=null?f1(mx)+"%":"–",runs.length+" runs in evidence base"]);
+    const o2b=Math.max(MODEL.dom.o2[0],o2-2),r1=gpv(te,o2b)/pr.v;fixes.push([`Lower oxygen to ${f1(o2b)}%`,`Spread ×${r1.toFixed(2)}`]);
+    if(te*2<=MODEL.dom.te[1])fixes.push([`Double the thickness to ${f1(t*2)} mm`,`Spread ×${(gpv(te*2,o2)/pr.v).toFixed(2)}`]);
+    if(sides==="two"&&t<=MODEL.dom.te[1])fixes.push(["Back the panel so only one side can burn",`Spread ×${(gpv(t,o2)/pr.v).toFixed(2)} (heated thickness doubles)`]);
+    fixes.push(["Airflow","Not separable from oxygen yet: O₂ fell during each test"]);}
+  else{
+    const near=fam?nearest(fam,o2,pk,u,1)[0]:null;const close=near&&near.d<=1.2;
+    const why=pr&&!pr.ok?pr.why:[];if(!modelCase&&fam===MODEL.fam){if(cfg!==MODEL.cfg)why.push("flow direction");if(g!=="micro")why.push("gravity")}
+    if(close){const r=near.r;V={cls:"warn",pill:'<span class="pill s-warn">Flight data, no model</span>',title:`Nearest flight run: ${r.inv} ${r.id}, ${r.v!=null?"spread "+r.v+" mm/s":r.out}`,text:"A real flight run sits close to these conditions. There are too few runs of this kind to fit a model, so the run is shown as data, not as a prediction."};}
+    else{V={cls:"",pill:'<span class="pill s-unk">Untested</span>',title:"No flight data at these conditions",text:(why.length?"Outside the tested range for "+why.join(", ")+". ":"")+(mx!=null?`The highest oxygen with a microgravity result for this material in our data is ${f1(mx)}%.`:"This material's flight runs have no transcribed oxygen values yet.")+" The tool gives no number here."};}
+    tiles.push(["Highest flight O₂, this material",mx!=null?f1(mx)+"%":"–",runs.length+" runs in evidence base"]);
+    const sus=runs.filter(isNo).length,bur=runs.filter(isBurn).length;tiles.push(["Flight outcomes",`${bur} burned · ${sus} no flame`,runs.length-bur-sus?`${runs.length-bur-sus} not yet transcribed`:""]);
+    if(mx!=null&&o2>mx)fixes.push([`Keep oxygen at or below ${f1(mx)}% for this material`,"Back inside flight evidence"]);
+    if(g!=="micro")fixes.push(["Compare microgravity and 1g bounds","No partial-gravity data in PSI"]);
+    fixes.push(["Flag these conditions for a future flight test","Adds to the test-next list"]);}
+  if(m.key==="silicone"||m.key==="nomex")tiles.push(["Flight result",m.key==="nomex"?"No sustained flame":"No sustained flame",m.key==="nomex"?"BASS-II F1–F3, 3 of 3 tests":"Saffire II, 4 of 4 samples"]);
+  tiles.push(["O₂ partial pressure",f2(o2/100*pk)+" kPa",f2(o2/100*psia)+" psia"]);
+  const ve=$("e-verdict");ve.className="verdict "+V.cls;ve.innerHTML=`<div>${V.pill}<h2 style="margin-top:6px">${esc(V.title)}</h2><p>${V.text}</p></div>`;
+  $("e-tiles").innerHTML=tiles.map(x=>`<div class="tile"><div class="l">${x[0]}</div><div class="v">${x[1]}</div><div class="s">${x[2]||""}</div></div>`).join("");
+  $("e-fixes").innerHTML=fixes.map(x=>`<div class="row"><span>${esc(x[0])}</span><span class="r">${x[1]}</span></div>`).join("")+`<div class="row"><span></span><button class="btn" id="e-flag">Add to test-next list</button></div>`;
+  $("e-flag").onclick=()=>{const s=`${m.name}: ${f1(o2)}% O₂, ${f1(psia)} psia, ${f1(u)} cm/s ${cfg}, ${g}`;if(!testNext.includes(s)){testNext.push(s);saveNext()}$("e-flag").textContent="Added";};
+  const nr=fam?nearest(fam,o2,pk,u,5):[];
+  $("e-near").innerHTML=nr.length?nr.map(x=>runLine(x.r)).join(""):`<p class="note">${m.cat==="A"&&!fam?"Runs for this material exist in the literature but are not transcribed into the evidence base yet.":"No flight runs in the evidence base for this material."}</p>`;
+  $("e-profile").innerHTML=`<div class="chips" style="margin-bottom:10px"><span class="pill ${m.cat==="A"?"s-ok":m.cat==="B"?"s-warn":"s-bad"}">${esc(m.catm)}</span><span class="chip">${esc(m.fam)}</span><span class="chip">${esc(m.comp)}</span></div><div class="list"><div class="row"><span>Investigations</span><span class="r">${esc(m.inv)}</span></div><div class="row"><span>Measured</span><span class="r">${esc(m.ev)}</span></div><div class="row"><span>Note</span><span class="r">${esc(m.note)}</span></div><div class="row"><span>1g certification</span><span class="r">${esc(D.cert)}</span></div></div>`;
+  drawMap(fam,o2,u,modelCase);
+}
+function drawMap(fam,o2,u,modelCase){
+  const W=720,H=300,L=48,R=16,T=18,B=40,x0=14,x1=45,y0=0,y1=40;const X=v=>L+(v-x0)/(x1-x0)*(W-L-R),Y=v=>H-B-(v-y0)/(y1-y0)*(H-T-B);
+  let s="";
+  const zones=[[20.9,24.1,"ISS"],[30,30.3,""],[33.7,40,"Lunar / Mars habitat design"]];
+  zones.forEach(z=>{s+=`<rect x="${X(z[0])}" y="${T}" width="${X(z[1])-X(z[0])}" height="${H-T-B}" fill="var(--accent-soft)" opacity=".7"/>`;if(z[2])s+=`<text x="${(X(z[0])+X(z[1]))/2}" y="${T+12}" text-anchor="middle" font-size="10.5" fill="var(--accent)">${z[2]}</text>`});
+  s+=`<line x1="${X(30)}" x2="${X(30)}" y1="${T}" y2="${H-B}" stroke="var(--accent)" stroke-dasharray="3 3"/><text x="${X(30)+4}" y="${H-B-6}" font-size="10.5" fill="var(--accent)">30% / Test 1</text>`;
+  for(let v=15;v<=45;v+=5)s+=`<line x1="${X(v)}" x2="${X(v)}" y1="${T}" y2="${H-B}" stroke="var(--line)"/><text x="${X(v)}" y="${H-B+16}" text-anchor="middle" font-size="11" fill="var(--muted)">${v}%</text>`;
+  for(let v=0;v<=40;v+=10)s+=`<line x1="${L}" x2="${W-R}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--line)"/><text x="${L-6}" y="${Y(v)+4}" text-anchor="end" font-size="11" fill="var(--muted)">${v}</text>`;
+  s+=`<text x="${(L+W-R)/2}" y="${H-6}" text-anchor="middle" font-size="11" fill="var(--muted)">Oxygen, % by volume</text><text x="12" y="${(T+H-B)/2}" font-size="11" fill="var(--muted)" transform="rotate(-90 12 ${(T+H-B)/2})" text-anchor="middle">Airflow, cm/s</text>`;
+  if(modelCase){const d=MODEL.dom;s+=`<rect x="${X(d.o2[0])}" y="${Y(d.u[1])}" width="${X(d.o2[1])-X(d.o2[0])}" height="${Y(d.u[0])-Y(d.u[1])}" fill="none" stroke="var(--ok)" stroke-width="1.5" stroke-dasharray="5 3"/><text x="${X(d.o2[0])+4}" y="${Y(d.u[1])-5}" font-size="10.5" fill="var(--ok)">model range</text>`}
+  const rs=fam?runsOf(fam).filter(r=>r.o2!=null&&r.u!=null):[];
+  rs.forEach(r=>{const c=isNo(r)?"var(--bad)":isBurn(r)?"var(--ok)":"var(--muted)";s+=`<circle cx="${X(r.o2)}" cy="${Y(r.u)}" r="5" fill="${c}" fill-opacity=".75" stroke="var(--surface)" stroke-width="1"><title>${esc(r.inv)} ${esc(r.id)}: ${f1(r.o2)}% O2, ${r.u} cm/s, ${esc(r.out)}</title></circle>`});
+  const cx=X(Math.min(o2,x1)),cy=Y(Math.min(u,y1));s+=`<g stroke="var(--ink)" stroke-width="2"><line x1="${cx-9}" x2="${cx+9}" y1="${cy}" y2="${cy}"/><line x1="${cx}" x2="${cx}" y1="${cy-9}" y2="${cy+9}"/></g><circle cx="${cx}" cy="${cy}" r="13" fill="none" stroke="var(--ink)" stroke-width="1"/>`;
+  $("e-map").innerHTML=s;
+  $("e-maplegend").innerHTML=`<span style="color:var(--ok)">●</span> burned &nbsp;<span style="color:var(--bad)">●</span> no sustained flame &nbsp;<span style="color:var(--muted)">●</span> outcome not transcribed &nbsp;⊕ your conditions · ${rs.length} runs plotted`;
+}
+
+/* ===================== CREW ===================== */
+const PRESETS={
+  lunar:{name:"Lunar surface habitat",o2:34,psia:8.2,u:10,g:"lunar",design:34,inv:[
+    {key:"nomex",label:"Nomex stowage bags",exposed:true,stow:false},{key:"silicone",label:"Silicone hatch seals",exposed:true,stow:false},
+    {key:"pmma",label:"Acrylic window cover, 4 mm, one side",exposed:true,stow:false,t:4,sides:"one"},{key:"kapton",label:"Kapton wiring insulation",exposed:true,stow:false},
+    {key:"cotton_jersey",label:"Cotton jersey crew clothing",exposed:false,stow:true}]},
+  iss:{name:"Space station (ISS-like)",o2:21,psia:14.5,u:10,g:"micro",design:21,inv:[
+    {key:"nomex",label:"Nomex stowage bags",exposed:true,stow:false},{key:"pmma",label:"Acrylic panel, 4 mm, one side",exposed:true,stow:false,t:4,sides:"one"},
+    {key:"kapton",label:"Kapton wiring insulation",exposed:true,stow:false},{key:"sibal",label:"Cotton-fiberglass cloth bundle",exposed:true,stow:true}]}};
+const SCN={
+  lunar:[["drift","Oxygen drifts toward 38%, cargo unpacked at T+12"],["vent","Ventilation fan fails"],["nominal","Nominal operations"]],
+  iss:[["overheat","Wiring overheat in a payload rack"],["vent","Ventilation fan fails"],["nominal","Nominal operations"]]};
+const DET={smoke:[0.5,2.0,"%/m"],co:[10,55,"ppm"],surf:[60,90,"°C"]};
+const C={};
+function initCrew(){
+  $("c-preset").innerHTML=Object.entries(PRESETS).map(([k,p])=>`<option value="${k}">${p.name}</option>`).join("");
+  $("c-preset").onchange=()=>{fillScn();resetSim()};$("c-scn").onchange=resetSim;$("c-reset").onclick=resetSim;
+  $("c-play").onclick=()=>{C.run=!C.run;$("c-play").textContent=C.run?"Pause":"Play"};
+  fillScn();resetSim();setInterval(()=>{if(C.run&&route()==="crew")tick()},1000);
+}
+function fillScn(){$("c-scn").innerHTML=SCN[$("c-preset").value].map(s=>`<option value="${s[0]}">${s[1]}</option>`).join("")}
+function rnd(){C.seed=(C.seed*16807)%2147483647;return(C.seed-1)/2147483646}
+function gauss(){return Math.sqrt(-2*Math.log(rnd()+1e-9))*Math.cos(2*Math.PI*rnd())}
+function resetSim(){const p=PRESETS[$("c-preset").value];
+  Object.assign(C,{p,key:$("c-preset").value,scn:$("c-scn").value,t:0,run:true,seed:42,o2:p.o2,psia:p.psia,u:p.u,smoke:0,co:1,surf:30,o2target:null,power:true,fanFixed:false,
+    inv:p.inv.map(x=>({...x})),hist:{o2:[],psia:[],u:[],smoke:[],surf:[]},log:[],decided:{},mode:"NORMAL"});
+  $("c-play").textContent="Pause";logAdd("auto","Simulation started: "+p.name);tick(true);}
+function logAdd(type,text){C.log.unshift({t:C.t,type,text})}
+function tick(first){
+  if(!first)C.t++;const t=C.t;const sc=C.scn;
+  if(sc==="drift"){if(C.o2target==null&&t>=3)C.o2=Math.min(38,C.o2+0.22);if(t===12){const c=C.inv.find(i=>i.key==="cotton_jersey");if(c&&!c.exposed&&!C.decided.cargo){c.exposed=true;C.decided.cargo=1;logAdd("auto","Event: cargo bag unpacked, cotton jersey clothing now exposed")}}}
+  if(sc==="vent"&&t>=4&&!C.fanFixed){if(t===4)logAdd("auto","Event: ventilation fan stopped");C.u=Math.max(0.5,C.u-3)}
+  if(sc==="overheat"&&C.power&&t>=3){if(t===3)logAdd("auto","Event: payload rack temperature rising");C.surf+=4;if(t>=9){C.smoke+=0.18;C.co+=4}}
+  if(!C.power){C.surf=Math.max(30,C.surf-5);C.smoke=Math.max(0,C.smoke-0.12);C.co=Math.max(1,C.co-3)}
+  if(C.o2target!=null){C.o2+= (C.o2target-C.o2)*0.35;if(Math.abs(C.o2-C.o2target)<0.05)C.o2=C.o2target}
+  if(C.fanFixed)C.u+= (C.p.u-C.u)*0.5;
+  const H=C.hist,push=(k,v)=>{H[k].push(v);if(H[k].length>60)H[k].shift()};
+  push("o2",C.o2+gauss()*0.04);push("psia",C.psia+gauss()*0.01);push("u",Math.max(0,C.u+gauss()*0.3));push("smoke",Math.max(0,C.smoke+Math.abs(gauss())*0.02));push("surf",C.surf+gauss()*0.3);
+  renderC();
+}
+function matState(item,o2,pk,u,g){
+  const m=D.mats.find(x=>x.key===item.key),fam=FAMKEY[item.key];
+  if(m.cat==="B")return{st:"smoke",cls:"s-warn",lab:"Smoke data only",txt:m.ev,why:`${m.name} was tested for smoke (SAME / SAME-R), not burning. ${m.note}.`};
+  if(fam===MODEL.fam&&g==="micro"){const te=item.sides==="two"?item.t/2:item.t;const pr=predict(te,o2,u,pk);if(pr.ok)return{st:"ok",cls:"s-ok",lab:"Supported",v:pr.v,txt:`spread ${pr.v.toFixed(3)} mm/s (likely ${pr.lo.toFixed(3)}–${pr.hi.toFixed(3)})`,why:"Gaussian process fitted on 39 BASS-II segments from 18 PMMA slab tests (NASA/TM-20210011385, Table 5.1). Held-out tests are predicted within about ×1.30 typically."}}
+  const mx=maxO2(fam),runs=runsOf(fam);
+  if(item.key==="nomex"&&g==="micro"&&o2<=23)return{st:"near",cls:"s-ok",lab:"Flight data: no flame",txt:"No sustained flame in 3 of 3 BASS-II tests, run at station-air oxygen or lower",why:"BASS-II F1–F3 (NASA/TM-20210011385, Section 3.1). BASS-II oxygen ranged from cabin air down to about 13% by nitrogen dilution; exact values for F1–F3 are not transcribed yet."};
+  if(item.key==="nomex")return{st:"unk",cls:"s-unk",lab:"Untested here",txt:"No sustained flame in 3 of 3 BASS-II tests; their oxygen level is not transcribed yet",why:"BASS-II F1–F3 (NASA/TM-20210011385, Section 3.1). Without the test oxygen we cannot say whether this holds at "+f1(o2)+"%."};
+  const nr=nearest(fam,o2,pk,u,1)[0];
+  if(nr&&nr.d<=1.2)return{st:"near",cls:"s-warn",lab:"Near flight data",txt:`${nr.r.inv} ${nr.r.id}: ${nr.r.v!=null?"spread "+nr.r.v+" mm/s":nr.r.out}`,why:"Closest flight run, shown as data, not a prediction."};
+  return{st:"unk",cls:"s-unk",lab:"Untested here",txt:mx!=null?`flight data only up to ${f1(mx)}% O₂ (${runs.length} runs)`:"no transcribed conditions",why:g!=="micro"?"No partial-gravity data in PSI. Microgravity and 1g act as bounds.":"Outside the tested flight conditions."};
+}
+function renderC(){
+  const o2=C.hist.o2.slice(-1)[0],psia=C.hist.psia.slice(-1)[0],u=C.hist.u.slice(-1)[0],pk=psia*KPA,g=C.p.g;
+  const mm=String(Math.floor(C.t/60)).padStart(2,"0")+":"+String(C.t%60).padStart(2,"0");$("c-clock").textContent="T+"+mm;
+  const exposed=C.inv.filter(i=>i.exposed),states=exposed.map(i=>({i,s:matState(i,o2,pk,u,g)}));
+  const combust=states.filter(x=>x.s.st!=="smoke"),unt=combust.filter(x=>x.s.st==="unk");
+  const cov=combust.length?Math.round((combust.length-unt.length)/combust.length*100):100;
+  const tested=combust.map(x=>x.i.key==="nomex"?null:maxO2(FAMKEY[x.i.key])).filter(v=>v!=null),weakest=tested.length?Math.min(...tested):null,head=weakest!=null?weakest-o2:null;
+  const pm=states.find(x=>x.s.st==="ok"&&x.s.v!=null);
+  const bo=band("o2_pct",o2),bu=band("airflow_cms",u),lvl={reference:0,check_design:0,elevated:1,high:2,outside_reference:3}[bo.c]??1;
+  const overDesign=o2>C.p.design+1;
+  let status,scls,pcls;
+  if(lvl>=3||(overDesign&&cov<50)){status="Low";scls="bad";pcls="s-bad"}
+  else if(combust.length&&cov===0){status="Unverified";scls="";pcls="s-unk"}
+  else if(cov<100||lvl>=2||(head!=null&&head<0)||bu.c==="sensitive"){status="Reduced";scls="warn";pcls="s-warn"}
+  else{status="Nominal";scls="ok";pcls="s-ok"}
+  C.status=status;
+  const why=[];if(overDesign)why.push(`oxygen ${f1(o2-C.p.design)} points above the ${C.p.design}% design point`);
+  why.push(`${combust.length-unt.length} of ${combust.length} exposed burnable materials have flight evidence here`);
+  if(head!=null&&head<0)why.push(`cabin oxygen is ${f1(-head)} points above the highest flight-tested oxygen for the weakest material`);
+  if(bu.c==="sensitive")why.push("airflow is in the 0–5 cm/s range where BASS-II flames were most flow-sensitive");
+  const T=[["Evidence coverage",cov+"%","burnable materials with flight evidence"],["Oxygen headroom",head==null?"–":(head>=0?"+":"")+f1(head)+" pts",weakest!=null?`vs ${f1(weakest)}% highest tested`:"no tested oxygen known"],["Predicted spread",pm?pm.s.v.toFixed(3)+" mm/s":"–",pm?"PMMA, Gaussian process":"only inside the model range"]];
+  $("c-margin").className="verdict "+scls;$("c-margin").innerHTML=`<div style="width:100%"><span class="pill ${pcls}">Fire Safety Margin v0.2</span><h2 style="margin-top:6px">Status: ${status}</h2><div class="tiles" style="margin-top:10px">${T.map(x=>`<div class="tile"><div class="l">${x[0]}</div><div class="v">${x[1]}</div><div class="s">${x[2]}</div></div>`).join("")}</div><p>${why.join("; ")}.</p></div>`;
+  $("c-mats").innerHTML=C.inv.map((it,ix)=>{const s=it.exposed?matState(it,o2,pk,u,g):null;return `<div class="row" style="flex-direction:column;gap:4px"><div style="display:flex;justify-content:space-between;gap:8px"><b style="font-size:13.5px">${esc(it.label)}</b>${it.exposed?`<span class="pill ${s.cls}">${s.lab}</span>`:'<span class="pill s-acc">Stowed</span>'}</div>${it.exposed?`<span class="note">${esc(s.txt)}</span><details><summary class="note" style="cursor:pointer">Why this?</summary><div class="why">${esc(s.why)} ${evidenceLinks(it.key)}</div></details>`:""}</div>`}).join("");
+  const det={smoke:C.hist.smoke.slice(-1)[0],co:C.co,surf:C.hist.surf.slice(-1)[0]};
+  const lev=k=>det[k]>=DET[k][1]?2:det[k]>=DET[k][0]?1:0;const dl=Math.max(lev("smoke"),lev("co"),lev("surf"));
+  const mode=dl===2?"EMERGENCY":(dl===1||C.status==="Low")?"CAUTION":"NORMAL";
+  if(mode!==C.mode){logAdd("auto",`Mode changed to ${mode}`);C.mode=mode}
+  $("c-banner").className="banner "+mode;$("c-mode").textContent=mode;
+  $("c-modewhy").textContent=mode==="EMERGENCY"?"Detection signals above critical thresholds. Follow the fire response procedure. Halo does not replace detectors or procedures.":mode==="CAUTION"?(dl?"Detection signals above warning thresholds.":"Fire margin is low under current conditions."):"No detection alerts. Fire margin is screened continuously.";
+  const tel=[["O₂","o2","%",1,[C.p.design]],["Pressure","psia","psia",2,[]],["Airflow","u","cm/s",1,[5]],["Smoke","smoke","%/m",2,DET.smoke.slice(0,2)],["Surface temp","surf","°C",0,DET.surf.slice(0,2)]];
+  $("c-tel").innerHTML=tel.map(([n,k,un,d,th])=>{const a=C.hist[k],v=a[a.length-1];return `<div class="spark"><span class="n">${n}</span>${spark(a,th)}<span class="v">${(+v).toFixed(d)} <span class="note">${un}</span></span></div>`}).join("")+`<div class="spark"><span class="n">CO</span><span class="note">placeholder thresholds ${DET.co[0]} / ${DET.co[1]} ppm</span><span class="v">${C.co.toFixed(0)} <span class="note">ppm</span></span></div>`;
+  $("c-screen").innerHTML=screenChips(o2,psia,u,g);
+  renderOpts({o2,u,mode,states,overDesign,dl});
+  $("c-log").innerHTML=C.log.slice(0,40).map(l=>`<div class="row"><span><span class="tag ${l.type==="crew"?"s-acc":l.type==="declined"?"s-warn":"s-unk"}">${l.type==="crew"?"CREW-APPROVED":l.type==="declined"?"DECLINED":"AUTOMATED CHECK"}</span> ${esc(l.text)}</span><span class="r mono">T+${String(Math.floor(l.t/60)).padStart(2,"0")}:${String(l.t%60).padStart(2,"0")}</span></div>`).join("");
+}
+function evidenceLinks(key){const fam=FAMKEY[key];if(!fam)return"";const src=[...new Set(runsOf(fam).map(r=>r.srcurl).filter(Boolean))];return src.length?"Sources: "+src.map((u,i)=>`<a href="${esc(u)}" target="_blank" rel="noopener">source ${i+1}</a>`).join(", "):""}
+function spark(a,th){const W=220,H=34;if(!a.length)return`<svg viewBox="0 0 ${W} ${H}"></svg>`;let mn=Math.min(...a,...th),mx=Math.max(...a,...th);if(mx-mn<1e-6){mx+=1;mn-=1}const pad=(mx-mn)*0.15;mn-=pad;mx+=pad;
+  const X=i=>i/(59)*W,Y=v=>H-2-(v-mn)/(mx-mn)*(H-4);const d=a.map((v,i)=>(i?"L":"M")+X(i+60-a.length).toFixed(1)+" "+Y(v).toFixed(1)).join("");
+  const lines=th.map((v,i)=>`<line x1="0" x2="${W}" y1="${Y(v)}" y2="${Y(v)}" stroke="${i?"var(--bad)":"var(--warn)"}" stroke-dasharray="3 3" stroke-width="1"/>`).join("");
+  const lx=X(59),ly=Y(a[a.length-1]);return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:34px" aria-hidden="true">${lines}<path d="${d} L${lx} ${H} L${X(60-a.length)} ${H}Z" fill="var(--accent-soft)" opacity=".7"/><path d="${d}" fill="none" stroke="var(--accent)" stroke-width="1.6"/><circle cx="${lx}" cy="${ly}" r="3" fill="var(--accent)"/></svg>`}
+function renderOpts(ctx){
+  const opts=[];
+  if(ctx.dl===2&&C.power)opts.push({id:"power",t:"Remove power from the overheating payload rack",e:"Simulated procedure step. Detection is above critical thresholds; Kapton and Teflon insulation produce small smoke particles that light-scattering detectors see poorly (SAME, SAME-R).",act:()=>{C.power=false}});
+  else if(ctx.dl===1&&C.power)opts.push({id:"inspect",t:"Inspect the payload rack and prepare to remove power",e:"Warning-level smoke or surface temperature. Early action before a flame appears.",act:()=>{C.power=false}});
+  if(ctx.overDesign&&C.o2target==null)opts.push({id:"o2",t:`Return oxygen to the ${C.p.design}% design point`,e:`Cabin is ${f1(ctx.o2-C.p.design)} points above design. Several exposed materials have flight data only at far lower oxygen.`,act:()=>{C.o2target=C.p.design}});
+  C.inv.forEach((it,ix)=>{const s=ctx.states.find(x=>x.i===it);if(it.exposed&&it.stow&&s&&(s.s.st==="unk"||s.s.st==="near"))opts.push({id:"stow"+ix,t:`Stow ${it.label}`,e:`${s.s.lab}: ${s.s.txt}. Stowing removes it from the exposed inventory.`,act:()=>{it.exposed=false}})});
+  if(ctx.u<5&&!C.fanFixed)opts.push({id:"fan",t:"Restore ventilation to 10 cm/s",e:"Flames were most flow-sensitive below 5 cm/s in BASS-II. Note: turning fans off quenched BASS-II flames in station air, and researchers warn this may not hold at elevated oxygen and low pressure.",act:()=>{C.fanFixed=true}});
+  const live=opts.filter(o=>!C.decided[o.id]);opts.length=0;opts.push(...live);
+  const el=$("c-opts");
+  el.innerHTML=opts.length?opts.map(o=>`<div class="opt"><div class="t">${esc(o.t)}</div><div class="e">${esc(o.e)}</div><div class="acts"><button class="btn primary" data-ok="${o.id}">Approve</button><button class="btn" data-no="${o.id}">Decline</button><span class="note" style="align-self:center">Needs crew approval</span></div></div>`).join(""):'<p class="note">No actions suggested right now. Halo keeps screening the cabin and will propose options when conditions change.</p>';
+  opts.forEach(o=>{const a=el.querySelector(`[data-ok="${o.id}"]`),b=el.querySelector(`[data-no="${o.id}"]`);
+    a.onclick=()=>{o.act();logAdd("crew",o.t);tick(true)};
+    b.onclick=()=>{logAdd("declined",o.t);C.decided[o.id]=1;b.closest(".opt").remove()}});
+}
+
+/* ===================== EVIDENCE ===================== */
+function initEvidence(){
+  $("r-env").innerHTML=D.atm.map(a=>`<option value="${a.key}">${esc(a.env)} · ${a.o2}% O₂, ${a.psia} psia</option>`).join("");$("r-env").value="lunar_mars_surface";
+  const fams=[...new Set(D.runs.map(r=>r.fam))];$("r-fam").innerHTML='<option value="">All materials</option>'+fams.map(f=>`<option value="${f}">${f.replace(/_/g," ")}</option>`).join("");
+  ["r-env","r-q"].forEach(id=>$(id).addEventListener("input",renderRank));$("r-fam").addEventListener("input",renderRuns);
+  renderRank();renderRuns();renderNext();
+}
+function invRuns(name){const n=name.replace(/ \/.*$/,"");return D.runs.filter(r=>r.inv===n)}
+function renderRank(){
+  const env=D.atm.find(a=>a.key===$("r-env").value),q=$("r-q").value;
+  const rows=D.inv.map(v=>{const runs=invRuns(v.investigation),o2s=runs.filter(r=>r.o2!=null).map(r=>r.o2),mx=o2s.length?Math.max(...o2s):null;
+    const qs=q==="burn"?(v.combustion_test==="true"&&v.fire_safety_pillar==="prevention"?4:v.combustion_test==="true"?2:0):q==="detect"?(v.fire_safety_pillar==="detection"?4:0):(v.fire_safety_pillar==="suppression"?4:0);
+    const rel=v.challenge_relevance==="direct"?2:0.5;const rs=Math.min(2,runs.length/10);const gap=mx!=null?Math.max(0,env.o2-mx):null;const os=mx!=null?Math.max(0,2-gap/5):0;
+    return{v,sc:qs+rel+rs+os,parts:[["question",qs],["NASA relevance",rel],["runs",rs],["oxygen coverage",os]],runs:runs.length,mx,gap}}).sort((a,b)=>b.sc-a.sc);
+  const top=rows[0].sc||1;
+  $("r-list").innerHTML=rows.slice(0,10).map((r,i)=>`<div class="rank"><span class="k">${String(i+1).padStart(2,"0")}</span><div style="min-width:0"><b>${esc(r.v.investigation)}</b> <span class="chip">${esc(r.v.fire_safety_pillar)}</span> ${r.v.verified==="yes"?'<span class="chip s-ok">verified</span>':r.v.verified==="partial"?'<span class="chip s-warn">partly verified</span>':'<span class="chip s-bad">not yet sourced</span>'}<div class="d">${esc(r.v.key_findings)}</div><div class="d">${r.runs} runs in evidence base${r.mx!=null?` · highest O₂ ${f1(r.mx)}%${r.gap>0?`, ${f1(r.gap)} points below this environment`:""}`:""} · ${r.parts.map(p=>p[0]+" "+p[1].toFixed(1)).join(" · ")}</div><div class="bar"><i style="width:${(r.sc/top*100).toFixed(0)}%"></i></div></div><span class="sc">${r.sc.toFixed(1)}</span></div>`).join("");
+}
+function renderRuns(){const f=$("r-fam").value;const rs=D.runs.filter(r=>!f||r.fam===f);
+  $("r-runs").innerHTML=`<thead><tr><th>Run</th><th>Material</th><th>Thick. mm</th><th>O₂ %</th><th>kPa</th><th>Flow cm/s</th><th>Direction</th><th>Outcome</th><th>Spread mm/s</th><th>Quality</th></tr></thead><tbody>`+rs.map(r=>`<tr><td class="num">${esc(r.inv)} ${esc(r.id)}${r.seg>1?"·"+r.seg:""}</td><td>${esc(r.mat)}</td><td class="num">${r.t??"–"}</td><td class="num">${r.o2!=null?f1(r.o2):"–"}</td><td class="num">${r.p!=null?f1(r.p):"–"}</td><td class="num">${r.u??"–"}</td><td>${esc(r.cfg||"–")}</td><td>${esc(r.out)}</td><td class="num">${r.v??"–"}</td><td class="note">${esc(r.q)}</td></tr>`).join("")+"</tbody>"}
+
+/* ===================== ROUTING ===================== */
+function route(){const h=location.hash.slice(1);return["engineer","crew","evidence"].includes(h)?h:"engineer"}
+function show(){const r=route();["engineer","crew","evidence"].forEach(v=>$("v-"+v).hidden=v!==r);document.querySelectorAll("nav a").forEach(a=>a.setAttribute("aria-current",a.dataset.v===r?"page":"false"))}
+window.addEventListener("hashchange",show);
+const NDROP=D.runs.filter(r=>r.inv.startsWith("TM-")).length;
+$("dataCount").textContent=`${D.runs.length-NDROP} flight runs + ${NDROP} drop-tower limit points · ${D.inv.length} investigations · ${D.mats.length} materials`;
+initEngineer();initCrew();initEvidence();show();
+</script>

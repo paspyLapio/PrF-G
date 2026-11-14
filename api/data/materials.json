@@ -1,0 +1,104 @@
+{
+ "cotton_fabric": {
+  "label": "Cotton fabric",
+  "class": "fabric",
+  "flammability": 0.7,
+  "flammability_note": "PLACEHOLDER weight used only by the stub scoring model; not derived from PSI. Replace with the GP/v0.2 margin.",
+  "name_in_sources": "Cotton jersey / interlock",
+  "composition": "100% cotton",
+  "evidence_category": "A",
+  "evidence_category_meaning": "direct_combustion (burned in microgravity)",
+  "investigations": "Saffire V",
+  "evidence_measured": "flame spread at 70-76 kPa, 25-27% O2",
+  "n_runs": 1,
+  "n_sustained": 1,
+  "n_not_sustained": 0,
+  "o2_tested_range_pct": [
+   26.2,
+   26.2
+  ],
+  "max_o2_with_sustained_flame_pct": 26.2,
+  "notes": "Only cotton burned at reduced pressure / elevated O2 in our data"
+ },
+ "nomex_fabric": {
+  "label": "Nomex fabric",
+  "class": "fabric",
+  "flammability": 0.45,
+  "flammability_note": "PLACEHOLDER weight used only by the stub scoring model; not derived from PSI. Replace with the GP/v0.2 margin.",
+  "name_in_sources": "Nomex (meta-aramid) fabric",
+  "composition": "meta-aramid",
+  "evidence_category": "A",
+  "evidence_category_meaning": "direct_combustion (burned in microgravity)",
+  "investigations": "BASS; BASS-II (F1-F3); Saffire II (PMMA-to-Nomex), VI",
+  "evidence_measured": "no sustained flame in BASS-II F1-F3",
+  "n_runs": 3,
+  "n_sustained": 0,
+  "n_not_sustained": 3,
+  "o2_tested_range_pct": null,
+  "max_o2_with_sustained_flame_pct": null,
+  "notes": "Nomex III (BASS-II F1-F3). Keep separate from Nomex HT90-40 (TM-2008-215260) and from the PMMA-to-Nomex composite sample"
+ },
+ "cotton_fiberglass": {
+  "label": "Cotton-fiberglass blend",
+  "class": "fabric",
+  "flammability": 0.6,
+  "flammability_note": "PLACEHOLDER weight used only by the stub scoring model; not derived from PSI. Replace with the GP/v0.2 margin.",
+  "name_in_sources": "SIBAL cotton/fiberglass fabric",
+  "composition": "75% cotton / 25% fiberglass by weight",
+  "evidence_category": "A",
+  "evidence_category_meaning": "direct_combustion (burned in microgravity)",
+  "investigations": "BASS; Saffire I-V",
+  "evidence_measured": "flame spread, burnout",
+  "n_runs": 7,
+  "n_sustained": 7,
+  "n_not_sustained": 0,
+  "o2_tested_range_pct": [
+   21.1,
+   22.1
+  ],
+  "max_o2_with_sustained_flame_pct": 22.1,
+  "notes": "Not the same as plain cotton: fiberglass changes behavior"
+ },
+ "pmma": {
+  "label": "PMMA panels",
+  "class": "polymer",
+  "flammability": 0.4,
+  "flammability_note": "PLACEHOLDER weight used only by the stub scoring model; not derived from PSI. Replace with the GP/v0.2 margin.",
+  "name_in_sources": "PMMA flat (acrylic)",
+  "composition": "polymethyl methacrylate",
+  "evidence_category": "A",
+  "evidence_category_meaning": "direct_combustion (burned in microgravity)",
+  "investigations": "BASS; BASS-II; Saffire II, IV, V",
+  "evidence_measured": "spread vs thickness, O2, flow (BASS-II); sustained flaming without appreciable spread up to 25.4% O2 (Saffire V-3, concurrent, 71.3 kPa)",
+  "n_runs": 52,
+  "n_sustained": 49,
+  "n_not_sustained": 1,
+  "o2_tested_range_pct": [
+   14.1,
+   25.4
+  ],
+  "max_o2_with_sustained_flame_pct": 25.4,
+  "notes": "Richest dataset: 20 BASS-II slab tests + films"
+ },
+ "silicone": {
+  "label": "Silicone rubber",
+  "class": "polymer",
+  "flammability": 0.25,
+  "flammability_note": "PLACEHOLDER weight used only by the stub scoring model; not derived from PSI. Replace with the GP/v0.2 margin.",
+  "name_in_sources": "Silicone rubber sheet",
+  "composition": "formulation unspecified",
+  "evidence_category": "A",
+  "evidence_category_meaning": "direct_combustion (burned in microgravity)",
+  "investigations": "Saffire II",
+  "evidence_measured": "no sustained flame in microgravity despite 1g burning",
+  "n_runs": 4,
+  "n_sustained": 0,
+  "n_not_sustained": 4,
+  "o2_tested_range_pct": [
+   22.1,
+   22.1
+  ],
+  "max_o2_with_sustained_flame_pct": null,
+  "notes": "Also has smoke evidence (SAME): keep as separate records"
+ }
+}

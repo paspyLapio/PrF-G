@@ -1,0 +1,7 @@
+{
+ "cotton_fabric":   {"label": "Cotton fabric",            "class": "fabric",  "flammability": 0.70, "note": "MOCK weight"},
+ "nomex_fabric":    {"label": "Nomex fabric",             "class": "fabric",  "flammability": 0.45, "note": "MOCK weight"},
+ "cotton_fiberglass": {"label": "Cotton-fiberglass blend", "class": "fabric",  "flammability": 0.60, "note": "MOCK weight"},
+ "pmma":            {"label": "PMMA panels",              "class": "polymer", "flammability": 0.40, "note": "MOCK weight"},
+ "silicone":        {"label": "Silicone rubber",          "class": "polymer", "flammability": 0.25, "note": "MOCK weight"}
+}

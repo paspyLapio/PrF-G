@@ -1,0 +1,2 @@
+standard,test,setup,pass_criterion,reference_atmosphere,gravity,status,caveat,source
+"NASA-STD-6001B (Change 3, 9 Jun 2025)",Test 1: upward flame propagation,Vertical sample ignited at the bottom,Burn length < 15.2 cm (6 in) and no burning debris transfer,30% O2 at 10.2 psia cited (tests use worst-case use atmosphere),1g,active standard,1g test: does not show how a material behaves in microgravity or lunar gravity,standards.nasa.gov / taskbook.nasaprs.com (via team research)

@@ -1,0 +1,199 @@
+[
+ {
+  "step": 0,
+  "t": "T+00min",
+  "o2_pct": 34.0,
+  "pressure_psi": 8.2,
+  "flow_cm_s": 10.0,
+  "gravity_g": 0.166,
+  "materials_exposed": [
+   "nomex",
+   "silicone",
+   "pmma",
+   "kapton"
+  ],
+  "event": null,
+  "simulated": true
+ },
+ {
+  "step": 1,
+  "t": "T+02min",
+  "o2_pct": 34.0,
+  "pressure_psi": 8.2,
+  "flow_cm_s": 10.0,
+  "gravity_g": 0.166,
+  "materials_exposed": [
+   "nomex",
+   "silicone",
+   "pmma",
+   "kapton"
+  ],
+  "event": null,
+  "simulated": true
+ },
+ {
+  "step": 2,
+  "t": "T+04min",
+  "o2_pct": 34.5,
+  "pressure_psi": 8.2,
+  "flow_cm_s": 10.0,
+  "gravity_g": 0.166,
+  "materials_exposed": [
+   "nomex",
+   "silicone",
+   "pmma",
+   "kapton"
+  ],
+  "event": "O2 drifting above the 34% design point",
+  "simulated": true
+ },
+ {
+  "step": 3,
+  "t": "T+06min",
+  "o2_pct": 35.0,
+  "pressure_psi": 8.2,
+  "flow_cm_s": 10.0,
+  "gravity_g": 0.166,
+  "materials_exposed": [
+   "nomex",
+   "silicone",
+   "pmma",
+   "kapton"
+  ],
+  "event": null,
+  "simulated": true
+ },
+ {
+  "step": 4,
+  "t": "T+08min",
+  "o2_pct": 35.5,
+  "pressure_psi": 8.2,
+  "flow_cm_s": 10.0,
+  "gravity_g": 0.166,
+  "materials_exposed": [
+   "nomex",
+   "silicone",
+   "pmma",
+   "kapton"
+  ],
+  "event": null,
+  "simulated": true
+ },
+ {
+  "step": 5,
+  "t": "T+10min",
+  "o2_pct": 36.0,
+  "pressure_psi": 8.2,
+  "flow_cm_s": 10.0,
+  "gravity_g": 0.166,
+  "materials_exposed": [
+   "nomex",
+   "silicone",
+   "pmma",
+   "kapton"
+  ],
+  "event": null,
+  "simulated": true
+ },
+ {
+  "step": 6,
+  "t": "T+12min",
+  "o2_pct": 36.5,
+  "pressure_psi": 8.2,
+  "flow_cm_s": 10.0,
+  "gravity_g": 0.166,
+  "materials_exposed": [
+   "nomex",
+   "silicone",
+   "pmma",
+   "kapton"
+  ],
+  "event": null,
+  "simulated": true
+ },
+ {
+  "step": 7,
+  "t": "T+14min",
+  "o2_pct": 37.0,
+  "pressure_psi": 8.2,
+  "flow_cm_s": 10.0,
+  "gravity_g": 0.166,
+  "materials_exposed": [
+   "nomex",
+   "silicone",
+   "pmma",
+   "kapton",
+   "cotton_jersey"
+  ],
+  "event": "Cargo bag unpacked: cotton jersey clothing exposed",
+  "simulated": true
+ },
+ {
+  "step": 8,
+  "t": "T+16min",
+  "o2_pct": 37.5,
+  "pressure_psi": 8.2,
+  "flow_cm_s": 10.0,
+  "gravity_g": 0.166,
+  "materials_exposed": [
+   "nomex",
+   "silicone",
+   "pmma",
+   "kapton",
+   "cotton_jersey"
+  ],
+  "event": null,
+  "simulated": true
+ },
+ {
+  "step": 9,
+  "t": "T+18min",
+  "o2_pct": 38.0,
+  "pressure_psi": 8.2,
+  "flow_cm_s": 10.0,
+  "gravity_g": 0.166,
+  "materials_exposed": [
+   "nomex",
+   "silicone",
+   "pmma",
+   "kapton",
+   "cotton_jersey"
+  ],
+  "event": null,
+  "simulated": true
+ },
+ {
+  "step": 10,
+  "t": "T+20min",
+  "o2_pct": 38.0,
+  "pressure_psi": 8.2,
+  "flow_cm_s": 10.0,
+  "gravity_g": 0.166,
+  "materials_exposed": [
+   "nomex",
+   "silicone",
+   "pmma",
+   "kapton",
+   "cotton_jersey"
+  ],
+  "event": null,
+  "simulated": true
+ },
+ {
+  "step": 11,
+  "t": "T+22min",
+  "o2_pct": 38.0,
+  "pressure_psi": 8.2,
+  "flow_cm_s": 10.0,
+  "gravity_g": 0.166,
+  "materials_exposed": [
+   "nomex",
+   "silicone",
+   "pmma",
+   "kapton",
+   "cotton_jersey"
+  ],
+  "event": null,
+  "simulated": true
+ }
+]

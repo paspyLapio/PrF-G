@@ -1,0 +1,152 @@
+{
+ "disclaimer": "SIMULATED procedures for the demo. Not NASA flight procedures. Follow actual mission procedures and Mission Control direction.",
+ "procedures": [
+  {
+   "id": "margin_untested",
+   "title": "Conditions outside the evidence: confirm and report",
+   "trigger": "band == untested",
+   "kind": "preventive",
+   "source": "SIMULATED",
+   "steps": [
+    {
+     "id": "u1",
+     "type": "check",
+     "text": "Confirm the O2 and pressure readings on a second display or sensor."
+    },
+    {
+     "id": "u2",
+     "type": "information",
+     "text": "Open 'Why this?' and read which exposed materials have no NASA microgravity evidence at these conditions."
+    },
+    {
+     "id": "u3",
+     "type": "human_action",
+     "text": "Consider delaying unpacking of fabrics without evidence here.",
+     "whatif_option": "A"
+    },
+    {
+     "id": "u4",
+     "type": "human_action",
+     "text": "Consider stowing fabrics without evidence here.",
+     "whatif_option": "B"
+    },
+    {
+     "id": "u5",
+     "type": "human_action",
+     "text": "Tell Mission Control the cabin is outside the tested range and which materials are affected."
+    },
+    {
+     "id": "u6",
+     "type": "check",
+     "text": "Log the decision and the readings."
+    }
+   ]
+  },
+  {
+   "id": "margin_tight",
+   "title": "Fire margin TIGHT: preventive checks",
+   "trigger": "band == tight",
+   "kind": "preventive",
+   "source": "SIMULATED",
+   "steps": [
+    {
+     "id": "t1",
+     "type": "check",
+     "text": "Confirm the O2 and pressure readings on a second display or sensor."
+    },
+    {
+     "id": "t2",
+     "type": "check",
+     "text": "Review the limiting material and any fabrics flagged by the indicator."
+    },
+    {
+     "id": "t3",
+     "type": "human_action",
+     "text": "Consider delaying unpacking of flagged fabrics.",
+     "whatif_option": "A"
+    },
+    {
+     "id": "t4",
+     "type": "human_action",
+     "text": "Consider stowing flagged fabrics.",
+     "whatif_option": "B"
+    },
+    {
+     "id": "t5",
+     "type": "human_action",
+     "text": "Ask Mission Control whether the O2 setpoint should be reviewed."
+    },
+    {
+     "id": "t6",
+     "type": "information",
+     "text": "Open 'Why this?' and read which conditions are untested."
+    },
+    {
+     "id": "t7",
+     "type": "check",
+     "text": "Log the decision and the readings."
+    }
+   ]
+  },
+  {
+   "id": "margin_critical",
+   "title": "Fire margin CRITICAL: reduce exposure",
+   "trigger": "band == critical",
+   "kind": "preventive",
+   "source": "SIMULATED",
+   "steps": [
+    {
+     "id": "c1",
+     "type": "human_action",
+     "text": "Notify the commander and Mission Control."
+    },
+    {
+     "id": "c2",
+     "type": "human_action",
+     "text": "Pause non-essential handling and unpacking of fabrics."
+    },
+    {
+     "id": "c3",
+     "type": "human_action",
+     "text": "Stow exposed fabrics.",
+     "whatif_option": "B"
+    },
+    {
+     "id": "c4",
+     "type": "human_action",
+     "text": "Ask Mission Control whether O2 should be returned to the design point under approved procedures.",
+     "whatif_option": "C"
+    },
+    {
+     "id": "c5",
+     "type": "check",
+     "text": "Confirm the location of fire-response equipment as listed in the vehicle's approved procedures."
+    },
+    {
+     "id": "c6",
+     "type": "check",
+     "text": "Watch the gauge until it leaves the critical band; log each reading."
+    }
+   ]
+  },
+  {
+   "id": "fire_event",
+   "title": "Fire event: hand off to the approved procedure",
+   "trigger": "manual only (detectors raise the alarm, not this tool)",
+   "kind": "handoff",
+   "source": "SIMULATED",
+   "steps": [
+    {
+     "id": "f1",
+     "type": "information",
+     "text": "This tool does not provide fire-response steps. Follow the vehicle's approved fire emergency procedure and Mission Control direction."
+    },
+    {
+     "id": "f2",
+     "type": "check",
+     "text": "After the event, log what was exposed and the cabin readings, for the evidence record."
+    }
+   ]
+  }
+ ]
+}

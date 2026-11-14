@@ -1,0 +1,5 @@
+test_id,fan_event_order,fan_display,airflow_cm_s_mapping,mapping_status,source
+M7,1,2.6,,unresolved_from_report_table,"NASA BASS-II Summary Report, Appendix A.4"
+M7,2,1.3,,unresolved_from_report_table,"NASA BASS-II Summary Report, Appendix A.4"
+M7,3,0.8,,unresolved_from_report_table,"NASA BASS-II Summary Report, Appendix A.4"
+M7,4,0.7,,unresolved_from_report_table,"NASA BASS-II Summary Report, Appendix A.4"

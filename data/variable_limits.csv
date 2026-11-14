@@ -1,0 +1,33 @@
+category,variable,unit,normal_min,normal_max,warning,critical,numeric_ready,issue_or_note
+atmosphere,total_pressure,kPa,34.5,103,near limits,<=34.5 or >103,yes,Range is very wide (5.0-14.9 psi); habitat presets should narrow it
+atmosphere,ppO2_inspired,kPa,19.33,20.66,16.93-19.2 or 20.8-47.46,<16.93 or >47.46,yes,Converted from 145-155 / 127-144 / 156-356 mmHg. Critical side read as >356 mmHg (source cell shows only '356')
+atmosphere,o2_concentration,% vol,20,21,>21 to <30,>=30,ISS only,"Earth/ISS values. A lunar base runs at >=30% by design, so needs its own preset"
+atmosphere,n2_concentration,% vol,30,,near 30,see issue,no,Critical cell '3 mmHg (1-hour average)' looks like a CO2 limit; split into an N2 row and a CO2 row
+atmosphere,co2_partial_pressure,kPa,,0.4,,"> 0.40 kPa (3 mmHg, 1-hour average)",to verify,Inferred from the N2 row; confirm source
+atmosphere,temperature,degC,20,25,18-20 or 25-27,outside NASA allowed range,partial,Critical bound not numeric
+atmosphere,relative_humidity,%,30,60,25-30 or 60-75,>75,yes,Critical cell shows only '75'; read as >75%
+atmosphere,air_velocity,cm/s,,,reduced circulation,loss of ventilation,no,Needs numbers: airflow drives microgravity flammability
+detection,smoke_particles,detector units,0 detectable,,weak smoke signal,confirmed smoke,no,SAME: smoke mean diameter 100-200 nm; ISS detector most sensitive above 1 um
+detection,co,ppm,below SMAC,,approaching SMAC,above SMAC,no,Look up numeric SMAC values
+detection,vocs,mg/m3,below SMAC,,approaching limit,above limit,no,Look up numeric SMAC values
+detection,temperature_rise_rate,degC/min,stable,,unusual rise,sharp rise / overheat,no,Needs numbers
+detection,surface_temperature,degC,within spec,,approaching limit,above limit,no,Needs numbers per hardware
+detection,flame_detection,state,none,,suspected,confirmed,categorical,CFI cool flames may not be visible to flame detectors
+fire_behavior,flame_temperature,state,no flame,,suspected thermal signal,confirmed flame,"evidence, not live","Belongs in evidence tables, not live telemetry"
+fire_behavior,flame_spread_rate,mm/s,0,0,detectable spread,rapid spread,"evidence, not live",Saffire I-V: 1.8-3.6 mm/s at 20-25 cm/s flow (runs.csv)
+fire_behavior,ignition_time,state,no ignition,,possible ignition,confirmed ignition,"evidence, not live",
+fire_behavior,burning_rate,g/s,0,0,detectable burning,intense burning,"evidence, not live",
+fire_behavior,flame_diameter,mm,0,0,detectable flame,large or growing flame,"evidence, not live",Relevant to droplet (FLEX) and spherical (ACME) data
+fire_behavior,heat_release_rate,W,0,0,detectable,increasing,"evidence, not live",BASS-II: mostly under 100 W
+suppression,agent_availability,state,available,,reduced,unavailable,categorical,
+suppression,agent_concentration,state,within spec,,near limits,out of spec,no,
+suppression,agent_flow_rate,state,normal,,reduced,zero when needed,no,
+suppression,system_status,state,operational,,degraded,offline,categorical,
+suppression,extinction_time,state,no event,,longer,failed,categorical,
+suppression,reignition_detection,state,not detected,,suspected,confirmed,categorical,
+sensor_reliability,sensor_status,state,operational,,degraded,offline/fault,categorical,Lowers FMI confidence
+sensor_reliability,calibration,state,in date,,nearly due,expired,categorical,
+sensor_reliability,timestamp,state,recent,,delayed,stale,categorical,"Code uses >30 s reduced, >120 s lost (placeholder)"
+sensor_reliability,sensor_location,state,known,,uncertain,unknown,categorical,
+sensor_reliability,measurement_uncertainty,state,within spec,,increased,out of spec,categorical,
+sensor_reliability,data_validity,state,valid,,suspicious,invalid/missing,categorical,

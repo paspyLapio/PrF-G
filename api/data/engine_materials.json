@@ -1,0 +1,302 @@
+{
+ "sibal": {
+  "label": "SIBAL cotton/fiberglass fabric",
+  "family": "sibal_fabric",
+  "evidence_category": "A",
+  "evidence_meaning": "direct_combustion (burned in microgravity)",
+  "composition": "75% cotton / 25% fiberglass by weight",
+  "investigations": "BASS; Saffire I-V",
+  "evidence_measured": "flame spread, burnout",
+  "note": "Not the same as plain cotton: fiberglass changes behavior"
+ },
+ "cotton_jersey": {
+  "label": "Cotton jersey / interlock",
+  "family": "cotton_fabric",
+  "evidence_category": "A",
+  "evidence_meaning": "direct_combustion (burned in microgravity)",
+  "composition": "100% cotton",
+  "investigations": "Saffire V",
+  "evidence_measured": "flame spread at 70-76 kPa, 25-27% O2",
+  "note": "Only cotton burned at reduced pressure / elevated O2 in our data"
+ },
+ "pmma": {
+  "label": "PMMA flat (acrylic)",
+  "family": "pmma",
+  "evidence_category": "A",
+  "evidence_meaning": "direct_combustion (burned in microgravity)",
+  "composition": "polymethyl methacrylate",
+  "investigations": "BASS; BASS-II; Saffire II, IV, V",
+  "evidence_measured": "spread vs thickness, O2, flow (BASS-II); sustained flaming without appreciable spread up to 25.4% O2 (Saffire V-3, concurrent, 71.3 kPa)",
+  "note": "Richest dataset: 20 BASS-II slab tests + films"
+ },
+ "pmma_structured": {
+  "label": "PMMA structured surface",
+  "family": "pmma_structured",
+  "evidence_category": "A",
+  "evidence_meaning": "direct_combustion (burned in microgravity)",
+  "composition": "polymethyl methacrylate",
+  "investigations": "Saffire II, V",
+  "evidence_measured": "local burn; opposed flow (V-4)",
+  "note": "Do NOT merge with flat PMMA"
+ },
+ "pmma_sphere": {
+  "label": "PMMA spheres",
+  "family": null,
+  "evidence_category": "A",
+  "evidence_meaning": "direct_combustion (burned in microgravity)",
+  "composition": "polymethyl methacrylate",
+  "investigations": "BASS; BASS-II",
+  "evidence_measured": "stagnation-point burning",
+  "note": "Geometry class of its own"
+ },
+ "nomex": {
+  "label": "Nomex (meta-aramid) fabric",
+  "family": "nomex_fabric",
+  "evidence_category": "A",
+  "evidence_meaning": "direct_combustion (burned in microgravity)",
+  "composition": "meta-aramid",
+  "investigations": "BASS; BASS-II (F1-F3); Saffire II (PMMA-to-Nomex), VI",
+  "evidence_measured": "no sustained flame in BASS-II F1-F3",
+  "note": "Nomex III (BASS-II F1-F3). Keep separate from Nomex HT90-40 (TM-2008-215260) and from the PMMA-to-Nomex composite sample"
+ },
+ "nomex_ht90_40": {
+  "label": "Nomex HT90-40 fabric",
+  "family": "nomex_ht90_fabric",
+  "evidence_category": "A",
+  "evidence_meaning": "direct_combustion (burned in microgravity)",
+  "composition": "meta-aramid, 12 mil fabric",
+  "investigations": "Microgravity Flame Spread in Exploration Atmospheres (NASA/TM-2008-215260)",
+  "evidence_measured": "0g flammability limits (5 s drop tower): burns 23% / extinguishes 22% O2 at 14.7 psia, 30 cm/s concurrent",
+  "note": "Different grade from BASS-II Nomex III; 1g ULOI 25.4% +/-0.6 (WSTF)"
+ },
+ "silicone": {
+  "label": "Silicone rubber sheet",
+  "family": "silicone",
+  "evidence_category": "A",
+  "evidence_meaning": "direct_combustion (burned in microgravity)",
+  "composition": "formulation unspecified",
+  "investigations": "Saffire II",
+  "evidence_measured": "no sustained flame in microgravity despite 1g burning",
+  "note": "Also has smoke evidence (SAME): keep as separate records"
+ },
+ "ultem_1000": {
+  "label": "Ultem 1000 film",
+  "family": "ultem_film",
+  "evidence_category": "A",
+  "evidence_meaning": "direct_combustion (burned in microgravity)",
+  "composition": "PEI, 10 mil (0.254 mm) film",
+  "investigations": "Microgravity Flame Spread in Exploration Atmospheres",
+  "evidence_measured": "0g flammability limits (5 s drop tower): burns 24% / extinguishes 23% O2 at 10.2 psia, 30 cm/s concurrent",
+  "note": "1g limits 2.5 points higher than 0g (26.5% ULOI WSTF); text 0g mean 22.5% conflicts with Table 1"
+ },
+ "mylar_g": {
+  "label": "Mylar G film",
+  "family": "mylar_film",
+  "evidence_category": "A",
+  "evidence_meaning": "direct_combustion (burned in microgravity)",
+  "composition": "PET, 5 mil (0.127 mm) film",
+  "investigations": "Microgravity Flame Spread in Exploration Atmospheres",
+  "evidence_measured": "0g flammability limits (5 s drop tower): burns 17% / extinguishes 16% O2 at 10.2 psia, 30 cm/s concurrent",
+  "note": "1g ULOI 20.8% (WSTF): 3.8 points above 0g; not transferable to every PET grade"
+ },
+ "kimwipes": {
+  "label": "Kimwipes tissue",
+  "family": null,
+  "evidence_category": "A",
+  "evidence_meaning": "direct_combustion (burned in microgravity)",
+  "composition": "cellulose tissue",
+  "investigations": "Microgravity Flame Spread in Exploration Atmospheres",
+  "evidence_measured": "spread rate vs O2, pressure, flow; opposed vs concurrent",
+  "note": "Opposed spread reported faster than concurrent in most conditions"
+ },
+ "wax_fiberglass": {
+  "label": "Wax-saturated fiberglass",
+  "family": null,
+  "evidence_category": "A",
+  "evidence_meaning": "direct_combustion (burned in microgravity)",
+  "composition": "wax in fiberglass",
+  "investigations": "BASS",
+  "evidence_measured": "flame spread",
+  "note": "Run data not yet transcribed"
+ },
+ "paraffin": {
+  "label": "Paraffin wax candle",
+  "family": null,
+  "evidence_category": "A",
+  "evidence_meaning": "direct_combustion (burned in microgravity)",
+  "composition": "paraffin",
+  "investigations": "BASS",
+  "evidence_measured": "candle flames in tube",
+  "note": "Fuel-model study, not a cabin material"
+ },
+ "japan_wax": {
+  "label": "Japan wax candle",
+  "family": null,
+  "evidence_category": "A",
+  "evidence_meaning": "direct_combustion (burned in microgravity)",
+  "composition": "plant wax",
+  "investigations": "BASS",
+  "evidence_measured": "candle flames in tube",
+  "note": "Fuel-model study, not a cabin material"
+ },
+ "kapton": {
+  "label": "Kapton film",
+  "family": null,
+  "evidence_category": "B",
+  "evidence_meaning": "smoke_only (heated below ignition)",
+  "composition": "polyimide, 0.13 mm film",
+  "investigations": "SAME; SAME-R",
+  "evidence_measured": "smoke particles (small)",
+  "note": "Smoke only: no flame-spread data"
+ },
+ "teflon": {
+  "label": "Teflon (PTFE)",
+  "family": null,
+  "evidence_category": "B",
+  "evidence_meaning": "smoke_only (heated below ignition)",
+  "composition": "PTFE",
+  "investigations": "SAME; SAME-R",
+  "evidence_measured": "smoke particles (small)",
+  "note": "Small particles are harder for light-scattering detectors"
+ },
+ "pyrell": {
+  "label": "Pyrell foam",
+  "family": null,
+  "evidence_category": "B",
+  "evidence_meaning": "smoke_only (heated below ignition)",
+  "composition": "modified polyester polyurethane, ~0.03 g/cm3",
+  "investigations": "SAME-2 / SAME-R",
+  "evidence_measured": "smoke particles; morphology change at zero flow",
+  "note": "Smoke only; confirmed SAME-R flight material"
+ },
+ "cotton_wick": {
+  "label": "Cotton lamp wick",
+  "family": null,
+  "evidence_category": "B",
+  "evidence_meaning": "smoke_only (heated below ignition)",
+  "composition": "cotton",
+  "investigations": "SAME",
+  "evidence_measured": "smoke particles (larger than Kapton, Teflon)",
+  "note": "Not the same sample as SIBAL or cotton jersey"
+ },
+ "silicone_smoke": {
+  "label": "Silicone rubber (smoke sample)",
+  "family": null,
+  "evidence_category": "B",
+  "evidence_meaning": "smoke_only (heated below ignition)",
+  "composition": "formulation unspecified",
+  "investigations": "SAME; SAME-R",
+  "evidence_measured": "large smoke particles; grow at lower flow",
+  "note": "Separate record from Saffire silicone burns"
+ },
+ "dbp": {
+  "label": "Dibutyl phthalate on wick",
+  "family": null,
+  "evidence_category": "B",
+  "evidence_meaning": "smoke_only (heated below ignition)",
+  "composition": "DBP on porous wick",
+  "investigations": "SAME",
+  "evidence_measured": "smoke (liquid droplets)",
+  "note": "Test substance, not a cabin material"
+ },
+ "pbi": {
+  "label": "PBI",
+  "family": null,
+  "evidence_category": "C",
+  "evidence_meaning": "inventory_only (no microgravity test found)",
+  "composition": "PBI fiber",
+  "investigations": "Historical use (NASA CR-2594, 1975)",
+  "evidence_measured": "none found",
+  "note": "Inventory only"
+ },
+ "beta_cloth": {
+  "label": "Beta cloth",
+  "family": null,
+  "evidence_category": "C",
+  "evidence_meaning": "inventory_only (no microgravity test found)",
+  "composition": "glass fiber, often PTFE-coated",
+  "investigations": "Historical use",
+  "evidence_measured": "none found",
+  "note": "Do not confuse with SIBAL"
+ },
+ "durette": {
+  "label": "Durette",
+  "family": null,
+  "evidence_category": "C",
+  "evidence_meaning": "inventory_only (no microgravity test found)",
+  "composition": "treated polyamide",
+  "investigations": "Apollo / Skylab clothing",
+  "evidence_measured": "none found",
+  "note": "Inventory only"
+ },
+ "epoxy": {
+  "label": "Epoxy",
+  "family": null,
+  "evidence_category": "C",
+  "evidence_meaning": "inventory_only (no microgravity test found)",
+  "composition": "epoxy resin",
+  "investigations": "Historical use",
+  "evidence_measured": "none found",
+  "note": "Inventory only"
+ },
+ "polycarbonate": {
+  "label": "Polycarbonate",
+  "family": null,
+  "evidence_category": "C",
+  "evidence_meaning": "inventory_only (no microgravity test found)",
+  "composition": "PC",
+  "investigations": "Historical use (helmets)",
+  "evidence_measured": "none found",
+  "note": "Inventory only"
+ },
+ "pvc": {
+  "label": "PVC",
+  "family": null,
+  "evidence_category": "C",
+  "evidence_meaning": "inventory_only (no microgravity test found)",
+  "composition": "PVC",
+  "investigations": "Historical use (wire insulation)",
+  "evidence_measured": "none found",
+  "note": "Inventory only"
+ },
+ "fluoroelastomer": {
+  "label": "Fluorocarbon elastomer",
+  "family": null,
+  "evidence_category": "C",
+  "evidence_meaning": "inventory_only (no microgravity test found)",
+  "composition": "FKM-type",
+  "investigations": "Historical use",
+  "evidence_measured": "none found",
+  "note": "Inventory only"
+ },
+ "polyacrylic_rubber": {
+  "label": "Polyacrylic rubber",
+  "family": null,
+  "evidence_category": "C",
+  "evidence_meaning": "inventory_only (no microgravity test found)",
+  "composition": "ACM",
+  "investigations": "Historical use",
+  "evidence_measured": "none found",
+  "note": "Inventory only"
+ },
+ "polyisoprene": {
+  "label": "Polyisoprene",
+  "family": null,
+  "evidence_category": "C",
+  "evidence_meaning": "inventory_only (no microgravity test found)",
+  "composition": "polyisoprene",
+  "investigations": "Historical use (water bladder)",
+  "evidence_measured": "none found",
+  "note": "Inventory only"
+ },
+ "urethane_generic": {
+  "label": "Urethane (generic)",
+  "family": null,
+  "evidence_category": "C",
+  "evidence_meaning": "inventory_only (no microgravity test found)",
+  "composition": "various",
+  "investigations": "Historical use (sealants, coatings)",
+  "evidence_measured": "none found",
+  "note": "Pyrell smoke data does not cover generic urethanes"
+ }
+}

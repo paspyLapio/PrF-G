@@ -1,0 +1,74 @@
+[
+ {
+  "key": "earth_sea_level",
+  "environment": "Earth sea level (reference)",
+  "o2_pct": "20.9",
+  "o2_value_type": "nominal",
+  "pressure_psia": "14.7",
+  "pressure_kpa": "101.4",
+  "ppo2_psia": "3.072",
+  "ppo2_kpa": "21.18",
+  "source": "reference only",
+  "notes": ""
+ },
+ {
+  "key": "iss",
+  "environment": "ISS interior",
+  "o2_pct": "24.1",
+  "o2_value_type": "maximum",
+  "pressure_psia": "14.5",
+  "pressure_kpa": "100.0",
+  "ppo2_psia": "3.495",
+  "ppo2_kpa": "24.09",
+  "source": "NASA standards (standards.nasa.gov, via team research)",
+  "notes": "ISS nominal is near Earth air; 24.1% is the stated maximum"
+ },
+ {
+  "key": "shuttle_mpcv_gateway",
+  "environment": "Shuttle / MPCV (Orion) / Gateway and similar",
+  "o2_pct": "30.0",
+  "o2_value_type": "maximum",
+  "pressure_psia": "10.2",
+  "pressure_kpa": "70.3",
+  "ppo2_psia": "3.06",
+  "ppo2_kpa": "21.1",
+  "source": "NASA standards (standards.nasa.gov, via team research)",
+  "notes": "Also a standard materials test environment (NASA-STD-6001 Test 1)"
+ },
+ {
+  "key": "artemis_iii",
+  "environment": "Artemis III",
+  "o2_pct": "30.0",
+  "o2_value_type": "maximum",
+  "pressure_psia": "9.6",
+  "pressure_kpa": "66.2",
+  "ppo2_psia": "2.88",
+  "ppo2_kpa": "19.86",
+  "source": "NASA standards (standards.nasa.gov, via team research)",
+  "notes": ""
+ },
+ {
+  "key": "lunar_mars_surface",
+  "environment": "Future lunar / Mars surface habitats",
+  "o2_pct": "33.7",
+  "o2_value_type": "minimum",
+  "pressure_psia": "8.2",
+  "pressure_kpa": "56.5",
+  "ppo2_psia": "2.763",
+  "ppo2_kpa": "19.05",
+  "source": "NASA standards (standards.nasa.gov, via team research)",
+  "notes": "Minimum for a specific design; nominal and maximum depend on tolerances"
+ },
+ {
+  "key": "surface_design_upper",
+  "environment": "Future habitat design range (upper)",
+  "o2_pct": "40.0",
+  "o2_value_type": "design range 36-40%",
+  "pressure_psia": "8.2",
+  "pressure_kpa": "56.5",
+  "ppo2_psia": "3.28",
+  "ppo2_kpa": "22.61",
+  "source": "NASA standards (standards.nasa.gov, via team research)",
+  "notes": "Design region, not a universal operating limit"
+ }
+]

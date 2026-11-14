@@ -1,0 +1,154 @@
+[
+ {
+  "parameter": "o2_pct",
+  "from": "0",
+  "to": "20.9",
+  "interpretation": "Earth air or below",
+  "screening_class": "reference",
+  "note": "Screening classification for the app, NOT an official NASA safe/warning/critical scale"
+ },
+ {
+  "parameter": "o2_pct",
+  "from": "20.9",
+  "to": "24.1",
+  "interpretation": "Near usual spacecraft atmospheres (ISS max 24.1%)",
+  "screening_class": "reference",
+  "note": "Screening classification for the app, NOT an official NASA safe/warning/critical scale"
+ },
+ {
+  "parameter": "o2_pct",
+  "from": "24.1",
+  "to": "30",
+  "interpretation": "Elevated vs reference",
+  "screening_class": "elevated",
+  "note": "Screening classification for the app, NOT an official NASA safe/warning/critical scale"
+ },
+ {
+  "parameter": "o2_pct",
+  "from": "30",
+  "to": "33.7",
+  "interpretation": "Elevated: assess for the specific cabin design",
+  "screening_class": "elevated",
+  "note": "Screening classification for the app, NOT an official NASA safe/warning/critical scale"
+ },
+ {
+  "parameter": "o2_pct",
+  "from": "33.7",
+  "to": "36",
+  "interpretation": "Exploration-atmosphere region (surface habitats)",
+  "screening_class": "high",
+  "note": "Screening classification for the app, NOT an official NASA safe/warning/critical scale"
+ },
+ {
+  "parameter": "o2_pct",
+  "from": "36",
+  "to": "40",
+  "interpretation": "High design region: stricter flammability control needed",
+  "screening_class": "high",
+  "note": "Screening classification for the app, NOT an official NASA safe/warning/critical scale"
+ },
+ {
+  "parameter": "o2_pct",
+  "from": "40",
+  "to": "100",
+  "interpretation": "Outside the reference range: needs specific justification",
+  "screening_class": "outside_reference",
+  "note": "Screening classification for the app, NOT an official NASA safe/warning/critical scale"
+ },
+ {
+  "parameter": "pressure_psia",
+  "from": "0",
+  "to": "5",
+  "interpretation": "Below unlimited crew-exposure range (human limit, not fire limit)",
+  "screening_class": "outside_reference",
+  "note": "Screening classification for the app, NOT an official NASA safe/warning/critical scale"
+ },
+ {
+  "parameter": "pressure_psia",
+  "from": "5",
+  "to": "8.2",
+  "interpretation": "Within crew-exposure range, below habitat design points",
+  "screening_class": "check_design",
+  "note": "Screening classification for the app, NOT an official NASA safe/warning/critical scale"
+ },
+ {
+  "parameter": "pressure_psia",
+  "from": "8.2",
+  "to": "14.7",
+  "interpretation": "Range of spacecraft and habitat design points",
+  "screening_class": "reference",
+  "note": "Screening classification for the app, NOT an official NASA safe/warning/critical scale"
+ },
+ {
+  "parameter": "pressure_psia",
+  "from": "14.7",
+  "to": "15",
+  "interpretation": "Within crew-exposure range",
+  "screening_class": "check_design",
+  "note": "Screening classification for the app, NOT an official NASA safe/warning/critical scale"
+ },
+ {
+  "parameter": "pressure_psia",
+  "from": "15",
+  "to": "100",
+  "interpretation": "Above unlimited crew-exposure range",
+  "screening_class": "outside_reference",
+  "note": "Screening classification for the app, NOT an official NASA safe/warning/critical scale"
+ },
+ {
+  "parameter": "airflow_cms",
+  "from": "0",
+  "to": "0.0001",
+  "interpretation": "Still air: does NOT mean no combustion",
+  "screening_class": "sensitive",
+  "note": "Screening classification for the app, NOT an official NASA safe/warning/critical scale"
+ },
+ {
+  "parameter": "airflow_cms",
+  "from": "0.0001",
+  "to": "1",
+  "interpretation": "Dim, steady flames observed to persist (BASS-II)",
+  "screening_class": "sensitive",
+  "note": "Screening classification for the app, NOT an official NASA safe/warning/critical scale"
+ },
+ {
+  "parameter": "airflow_cms",
+  "from": "1",
+  "to": "5",
+  "interpretation": "High flame sensitivity to flow changes (BASS-II)",
+  "screening_class": "sensitive",
+  "note": "Screening classification for the app, NOT an official NASA safe/warning/critical scale"
+ },
+ {
+  "parameter": "airflow_cms",
+  "from": "5",
+  "to": "20",
+  "interpretation": "Tested experimentally: assess per material and flow direction",
+  "screening_class": "assess_per_material",
+  "note": "Screening classification for the app, NOT an official NASA safe/warning/critical scale"
+ },
+ {
+  "parameter": "airflow_cms",
+  "from": "20",
+  "to": "30",
+  "interpretation": "Saffire test flows",
+  "screening_class": "assess_per_material",
+  "note": "Screening classification for the app, NOT an official NASA safe/warning/critical scale"
+ },
+ {
+  "parameter": "airflow_cms",
+  "from": "30",
+  "to": "53",
+  "interpretation": "Covered by some BASS-II hardware descriptions",
+  "screening_class": "assess_per_material",
+  "note": "Screening classification for the app, NOT an official NASA safe/warning/critical scale"
+ },
+ {
+  "parameter": "airflow_cms",
+  "from": "53",
+  "to": "1000",
+  "interpretation": "Outside BASS-II hardware range",
+  "screening_class": "outside_reference",
+  "note": "Screening classification for the app, NOT an official NASA safe/warning/critical scale"
+ }
+]

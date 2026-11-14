@@ -1,0 +1,315 @@
+<title>Halo Material Explorer</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: full-screen evidence console. Left rail = cabin set + conditions, centre = 3D evidence space, right rail = combined verdict. Stacks on phones. */
+:root{
+  --bg:#EEF2F8;--panel:#FFFFFF;--panel-2:#F3F6FB;--ink:#0E1626;--muted:#5A667A;--line:#D6DDE8;--grid:#C9D2E0;--accent:#2457D6;--accent-soft:#E2EAFF;
+  --ok:#13804D;--ok-soft:#DCF3E7;--warn:#9A5C00;--warn-soft:#FBEED3;--bad:#C2321F;--bad-soft:#FDE3DE;--unk:#6B4FD1;--unk-soft:#ECE6FF;
+  --m1:#2457D6;--m2:#D9690B;--m3:#0E8C7E;--m4:#C2307A;--m5:#7448D6;--m6:#9C7A00;--m7:#0B7BB3;--m8:#B8323F;
+  --f-display:"Chakra Petch","Arial Narrow",Arial,sans-serif;--f-body:"IBM Plex Sans",system-ui,-apple-system,sans-serif;--f-mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0A0F1A;--panel:#111827;--panel-2:#172033;--ink:#E7ECF5;--muted:#8D9AB0;--line:#243049;--grid:#2A3756;--accent:#6EA8FF;--accent-soft:#1A2850;
+  --ok:#3DD68C;--ok-soft:#0F2E21;--warn:#F5B841;--warn-soft:#33280D;--bad:#FF6B5E;--bad-soft:#3A1614;--unk:#A78BFA;--unk-soft:#231B45;
+  --m1:#6EA8FF;--m2:#FF9F43;--m3:#3DD6C5;--m4:#F472B6;--m5:#C4A1FF;--m6:#FACC15;--m7:#7DD3FC;--m8:#FB7185;color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0A0F1A;--panel:#111827;--panel-2:#172033;--ink:#E7ECF5;--muted:#8D9AB0;--line:#243049;--grid:#2A3756;--accent:#6EA8FF;--accent-soft:#1A2850;
+  --ok:#3DD68C;--ok-soft:#0F2E21;--warn:#F5B841;--warn-soft:#33280D;--bad:#FF6B5E;--bad-soft:#3A1614;--unk:#A78BFA;--unk-soft:#231B45;
+  --m1:#6EA8FF;--m2:#FF9F43;--m3:#3DD6C5;--m4:#F472B6;--m5:#C4A1FF;--m6:#FACC15;--m7:#7DD3FC;--m8:#FB7185;color-scheme:dark}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font:14px/1.5 var(--f-body);padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0}
+h1,h2,h3{font-family:var(--f-display);margin:0;text-wrap:balance}
+h3{font-size:12px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+button,select,input{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.app{height:100%;display:grid;grid-template-rows:auto minmax(0,1fr);gap:12px;padding-block:12px}
+.top{display:flex;flex-wrap:wrap;align-items:center;gap:10px 22px}
+.brand{display:flex;align-items:center;gap:10px}
+.brand h1{font-size:22px;font-weight:700;letter-spacing:.02em}
+.brand span{font-size:12px;color:var(--muted)}
+.axes{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-left:auto}
+.axes label{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);display:flex;align-items:center;gap:6px}
+.axes select{background:var(--panel);border:1px solid var(--line);border-radius:7px;padding:5px 8px;font-size:13px}
+.main{display:grid;grid-template-columns:290px minmax(0,1fr) 360px;gap:12px;min-height:0}
+.rail{background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:auto;min-height:0;padding:14px}
+.sec{padding-block:4px 14px;border-bottom:1px solid var(--line);margin-bottom:12px}
+.sec:last-child{border-bottom:0;margin-bottom:0}
+.field{display:flex;flex-direction:column;gap:3px;margin-top:10px}
+.field label{font-size:12px;color:var(--muted);display:flex;justify-content:space-between;gap:8px}
+.field label b{font-family:var(--f-mono);font-weight:500;color:var(--ink)}
+select{background:var(--panel-2);border:1px solid var(--line);border-radius:8px;padding:6px 8px;width:100%}
+input[type=range]{width:100%;accent-color:var(--accent)}
+.presets{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+.btn{border:1px solid var(--line);background:var(--panel-2);border-radius:7px;padding:5px 9px;font-size:12.5px;font-weight:500}
+.btn:hover{border-color:var(--accent)}
+.btn.on{background:var(--accent);color:var(--panel);border-color:var(--accent)}
+.mat{display:grid;grid-template-columns:18px 12px minmax(0,1fr);gap:8px;align-items:center;padding:5px 0;font-size:13px}
+.mat input{margin:0;accent-color:var(--accent)}
+.dot{width:12px;height:12px;border-radius:50%;display:inline-block;flex:none}
+.grp{font-size:11px;color:var(--muted);margin-top:10px;letter-spacing:.06em;text-transform:uppercase}
+.stage{position:relative;background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden;min-height:0;min-width:0}
+#cv{position:absolute;inset:0;width:100%;height:100%;touch-action:none;cursor:grab}
+#cv:active{cursor:grabbing}
+.hud{position:absolute;left:12px;top:12px;right:12px;display:flex;justify-content:space-between;gap:10px;pointer-events:none}
+.hud>*{pointer-events:auto}
+.legend{background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:8px 10px;font-size:12px;display:flex;flex-direction:column;gap:3px;max-width:260px}
+.legend .r{display:flex;align-items:center;gap:7px}
+.views{display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end;align-self:flex-start}
+.tip{position:absolute;pointer-events:none;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:12px;max-width:260px;box-shadow:0 6px 18px rgba(0,0,0,.18)}
+.foot{position:absolute;left:12px;bottom:10px;font-size:11.5px;color:var(--muted);pointer-events:none}
+.verdict{border-left:4px solid var(--unk);padding-left:12px}
+.verdict.ok{border-color:var(--ok)}.verdict.warn{border-color:var(--warn)}
+.verdict h2{font-size:21px;font-weight:600;margin-top:6px;line-height:1.25}
+.verdict p{margin:6px 0 0;color:var(--muted);font-size:13px}
+.pill{display:inline-block;font-size:11.5px;font-weight:600;padding:2px 9px;border-radius:5px;letter-spacing:.03em}
+.s-ok{background:var(--ok-soft);color:var(--ok)}.s-warn{background:var(--warn-soft);color:var(--warn)}.s-bad{background:var(--bad-soft);color:var(--bad)}.s-unk{background:var(--unk-soft);color:var(--unk)}.s-acc{background:var(--accent-soft);color:var(--accent)}
+.tiles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:12px}
+.tile{background:var(--panel-2);border-radius:9px;padding:9px 11px}
+.tile .l{font-size:11.5px;color:var(--muted)}.tile .v{font-family:var(--f-mono);font-size:19px;font-weight:500}.tile .s{font-size:11.5px;color:var(--muted)}
+.card{border:1px solid var(--line);border-radius:9px;padding:9px 11px;margin-top:8px}
+.card .h{display:flex;align-items:center;gap:8px;justify-content:space-between}
+.card .h b{font-size:13.5px;display:flex;align-items:center;gap:8px;min-width:0}
+.card .t{font-size:12.5px;color:var(--muted);margin-top:3px}
+details summary{cursor:pointer;font-size:12px;color:var(--accent);margin-top:4px}
+.why{font-size:12px;color:var(--muted);background:var(--panel-2);border-radius:7px;padding:8px;margin-top:6px}
+.why a{color:var(--accent)}
+.chips{display:flex;flex-wrap:wrap;gap:5px}
+.chip{font-size:11.5px;padding:2px 8px;border-radius:999px;border:1px solid var(--line);background:var(--panel-2)}
+.row{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-top:1px solid var(--line);font-size:12.5px}
+.row:first-child{border-top:0}
+.row .r{color:var(--muted);text-align:right;flex:none;max-width:50%}
+.ins{background:var(--accent-soft);border-radius:9px;padding:9px 11px;margin-top:8px;font-size:12.5px}
+.ins b{color:var(--accent)}
+@media (max-width:1180px){.main{grid-template-columns:260px minmax(0,1fr)}.right{grid-column:1/-1}}
+@media (max-width:760px){html,body{height:auto}.app{height:auto}.main{grid-template-columns:minmax(0,1fr)}.stage{height:440px}.rail{overflow:visible}.axes{margin-left:0}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="app">
+  <div class="top">
+    <div class="brand">
+      <svg width="34" height="34" viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="17" fill="none" stroke="var(--accent)" stroke-width="2"/><ellipse cx="20" cy="20" rx="17" ry="6" fill="none" stroke="var(--accent)" stroke-width="1.2" opacity=".6"/><circle cx="20" cy="20" r="4.5" fill="var(--m2)"/></svg>
+      <div><h1>Halo · Material Explorer</h1><span id="count"></span></div>
+    </div>
+    <div class="axes">
+      <label for="ax">X <select id="ax"></select></label>
+      <label for="ay">Up <select id="ay"></select></label>
+      <label for="az">Depth <select id="az"></select></label>
+    </div>
+  </div>
+  <div class="main">
+    <aside class="rail">
+      <div class="sec">
+        <h3>Cabin set</h3>
+        <p style="font-size:12px;color:var(--muted);margin:6px 0 0">Combine the materials that will share a cabin. The set is judged by its weakest evidence.</p>
+        <div id="mats"></div>
+      </div>
+      <div class="sec">
+        <h3>Conditions</h3>
+        <div class="presets" id="presets"></div>
+        <div class="field"><label for="o2">Oxygen <b id="o2v"></b></label><input id="o2" type="range" min="12" max="42" step="0.1" value="21"></div>
+        <div class="field"><label for="p">Total pressure <b id="pv"></b></label><input id="p" type="range" min="5" max="15" step="0.1" value="14.5"></div>
+        <div class="field"><label for="u">Airflow <b id="uv"></b></label><input id="u" type="range" min="0" max="40" step="0.5" value="10"></div>
+        <div class="field"><label for="cfg">Airflow vs flame</label><select id="cfg"><option value="opposed">Opposed: air flows against the flame</option><option value="concurrent">Concurrent: air flows with the flame</option></select></div>
+        <div class="field"><label for="t">Panel thickness (PMMA) <b id="tv"></b></label><input id="t" type="range" min="0.5" max="10" step="0.5" value="4"></div>
+        <div class="field"><label for="s">Exposed sides</label><select id="s"><option value="one">One side (backed)</option><option value="two">Both sides</option></select></div>
+        <div class="field"><label for="g">Gravity</label><select id="g"><option value="micro">Microgravity</option><option value="lunar">Lunar surface, 1.62 m/s²</option><option value="mars">Mars surface, 3.71 m/s²</option></select></div>
+      </div>
+    </aside>
+    <section class="stage" aria-label="3D evidence space">
+      <canvas id="cv" aria-label="Rotatable 3D plot of flight runs"></canvas>
+      <div class="hud">
+        <div class="legend" id="legend"></div>
+        <div class="views">
+          <button class="btn" data-view="iso">3D</button><button class="btn" data-view="top">X · Up</button><button class="btn" data-view="side">X · Depth</button><button class="btn" id="spin">Auto-rotate</button>
+        </div>
+      </div>
+      <div class="tip" id="tip" hidden></div>
+      <div class="foot" id="foot">Drag to rotate · scroll or pinch to zoom · hover a run for details</div>
+    </section>
+    <aside class="rail right">
+      <div class="sec"><div class="verdict" id="verdict"></div><div class="tiles" id="tiles"></div></div>
+      <div class="sec"><h3>Materials in this set</h3><div id="cards"></div></div>
+      <div class="sec"><h3>Combination findings</h3><div id="insights"></div></div>
+      <div class="sec"><h3>Screening</h3><div class="chips" id="screen" style="margin-top:8px"></div><p style="font-size:11.5px;color:var(--muted);margin:8px 0 0">App classification from NASA design points, not an official NASA safe / warning / critical scale.</p></div>
+      <div class="sec"><h3>Fixes and next steps</h3><div id="fixes" style="margin-top:4px"></div></div>
+    </aside>
+  </div>
+</div>
+
+<script>
+const D=__DATA__;
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const KPA=6.89476,f1=x=>(+x).toFixed(1),f2=x=>(+x).toFixed(2);
+const GP=__GP__;
+function gpPredict(te,o2){const z=[(Math.log(te)-GP.mu[0])/GP.sd[0],(o2-GP.mu[1])/GP.sd[1]];const k=GP.Z.map(r=>GP.c*Math.exp(-0.5*(((r[0]-z[0])/GP.ls[0])**2+((r[1]-z[1])/GP.ls[1])**2)));
+  let m=0,q=0;for(let i=0;i<k.length;i++){m+=k[i]*GP.alpha[i];let s=0;const row=GP.Kinv[i];for(let j=0;j<k.length;j++)s+=row[j]*k[j];q+=k[i]*s}
+  return{mu:GP.ym+GP.ys*m,sd:Math.sqrt(Math.max(0,GP.c-q+GP.noise))*GP.ys}}
+const gpv=(te,o2)=>Math.exp(gpPredict(te,o2).mu);
+const MODEL={err:GP.err,dom:{te:[0.5,5],o2:[17,22.5],u:[2,21],p:[97,103]}};
+const FAM={sibal:"sibal_fabric",cotton_jersey:"cotton_fabric",pmma:"pmma",pmma_structured:"pmma_structured",nomex:"nomex_fabric",silicone:"silicone"};
+D.runs.forEach(r=>{r.pp=r.o2!=null&&r.p!=null?r.o2/100*r.p:null});
+const runsOf=f=>D.runs.filter(r=>r.fam===f);
+const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+
+/* ---------- metric axes, grouped by category ---------- */
+const AXES={
+  o2:{cat:"Environment",name:"Oxygen",unit:"% O₂",get:r=>r.o2,cur:c=>c.o2,min:12,max:42},
+  p:{cat:"Environment",name:"Pressure",unit:"kPa",get:r=>r.p,cur:c=>c.pk,min:30,max:110},
+  pp:{cat:"Environment",name:"O₂ partial pressure",unit:"kPa",get:r=>r.pp,cur:c=>c.o2/100*c.pk,min:10,max:30},
+  u:{cat:"Environment",name:"Airflow",unit:"cm/s",get:r=>r.u,cur:c=>c.u,min:0,max:40},
+  t:{cat:"Sample",name:"Thickness",unit:"mm",get:r=>r.t,cur:c=>c.t,min:0,max:10.5},
+  v:{cat:"Outcome",name:"Spread rate",unit:"mm/s",get:r=>r.v,cur:()=>null,min:0,max:4}
+};
+function axisOptions(sel,def){const cats=[...new Set(Object.values(AXES).map(a=>a.cat))];
+  sel.innerHTML=cats.map(c=>`<optgroup label="${c}">`+Object.entries(AXES).filter(([,a])=>a.cat===c).map(([k,a])=>`<option value="${k}">${a.name} (${a.unit})</option>`).join("")+"</optgroup>").join("");sel.value=def}
+
+/* ---------- state ---------- */
+const S={sel:new Set(["pmma","nomex","silicone","sibal","cotton_jersey","kapton"]),colors:{}};
+const PALETTE=["--m1","--m2","--m3","--m4","--m5","--m6","--m7","--m8"];
+D.mats.forEach((m,i)=>S.colors[m.key]=PALETTE[i%PALETTE.length]);
+["pmma","nomex","silicone","sibal","cotton_jersey","kapton","pmma_structured","teflon"].forEach((k,i)=>S.colors[k]=PALETTE[i]);
+function cond(){const o2=+$("o2").value,psia=+$("p").value,u=+$("u").value,t=+$("t").value;return{o2,psia,pk:psia*KPA,u,t,te:$("s").value==="two"?t/2:t,cfg:$("cfg").value,g:$("g").value}}
+
+/* ---------- evidence logic ---------- */
+function band(param,v){return D.bands.find(x=>x.p===param&&v>=x.a&&v<x.b)||D.bands.filter(x=>x.p===param).slice(-1)[0]}
+const BC={reference:"s-ok",check_design:"s-acc",elevated:"s-warn",high:"s-bad",outside_reference:"s-bad",sensitive:"s-warn",assess_per_material:"s-acc"};
+function predict(c){const d=MODEL.dom,why=[];if(c.te<d.te[0]||c.te>d.te[1])why.push("thickness");if(c.o2<d.o2[0]||c.o2>d.o2[1])why.push("oxygen");if(c.u<d.u[0]||c.u>d.u[1])why.push("airflow");if(c.pk<d.p[0]||c.pk>d.p[1])why.push("pressure");if(c.cfg!=="opposed")why.push("flow direction");if(c.g!=="micro")why.push("gravity");
+  if(why.length)return{ok:false,why};const g=gpPredict(c.te,c.o2);return{ok:true,v:Math.exp(g.mu),lo:Math.exp(g.mu-g.sd),hi:Math.exp(g.mu+g.sd)}}
+function nearest(fam,c,n=1){return runsOf(fam).filter(r=>r.o2!=null).map(r=>({r,d:Math.hypot((r.o2-c.o2)/3,((r.u??c.u)-c.u)/10,r.p!=null?(r.p-c.pk)/20:.5)})).sort((a,b)=>a.d-b.d).slice(0,n)}
+function cover(fam){const rs=runsOf(fam).filter(r=>r.o2!=null&&r.sus!=="");if(!rs.length)return null;const ps=rs.filter(r=>r.p!=null).map(r=>r.p);return{o2:Math.max(...rs.map(r=>r.o2)),pmin:ps.length?Math.min(...ps):null,n:runsOf(fam).length}}
+function state(key,c){const m=D.mats.find(x=>x.key===key),fam=FAM[key];
+  if(m.cat==="C")return{k:"none",rank:0,cls:"s-bad",lab:"No flight test",txt:"Flown on spacecraft; no microgravity burn or smoke test found.",why:m.note};
+  if(m.cat==="B")return{k:"smoke",rank:-1,cls:"s-warn",lab:"Smoke data only",txt:m.ev,why:`Heated below ignition in ${m.inv}. Tells how detectable its overheating is, not whether it keeps burning.`};
+  if(!fam)return{k:"lit",rank:1,cls:"s-unk",lab:"Runs not transcribed",txt:`Burned in ${m.inv}; run values not yet in the evidence base.`,why:m.note};
+  if(key==="pmma"){const pr=predict(c);if(pr.ok)return{k:"model",rank:4,cls:"s-ok",lab:"Predicted",txt:`Spread ${pr.v.toFixed(3)} mm/s (likely ${pr.lo.toFixed(3)}–${pr.hi.toFixed(3)})`,why:"Gaussian process fitted on 39 BASS-II segments from 18 PMMA slab tests (NASA/TM-20210011385, Table 5.1). Held-out tests are predicted within about ×1.30 typically.",v:pr.v}}
+  if(key==="nomex"&&c.g==="micro"&&c.o2<=23)return{k:"near",rank:3,cls:"s-ok",lab:"Flight: no flame",txt:"No sustained flame in 3 of 3 BASS-II tests at station-air oxygen or lower.",why:"BASS-II F1–F3 (NASA/TM-20210011385, Section 3.1). Exact oxygen per test not transcribed yet."};
+  if(key==="nomex")return{k:"unt",rank:1,cls:"s-unk",lab:"Untested here",txt:"No flame in 3 of 3 BASS-II tests, but only at station-air oxygen or lower.",why:"Whether Nomex stays non-burning at "+f1(c.o2)+"% O₂ has no flight evidence."};
+  const nr=nearest(fam,c)[0],cv=cover(fam);
+  if(nr&&nr.d<=1.2&&c.g==="micro"){const r=nr.r;return{k:"near",rank:3,cls:r.sus==="no"?"s-ok":"s-warn",lab:r.sus==="no"?"Flight: no flame":"Flight: burned",txt:`${r.inv} ${r.id} at ${f1(r.o2)}% O₂: ${r.v!=null?"spread "+r.v+" mm/s":r.out}`,why:"Closest flight run, shown as data rather than a prediction."}}
+  return{k:"unt",rank:1,cls:"s-unk",lab:"Untested here",txt:cv?`Flight data only up to ${f1(cv.o2)}% O₂${cv.pmin!=null?", down to "+f1(cv.pmin)+" kPa":""}.`:"No transcribed conditions.",why:c.g!=="micro"?"No partial-gravity data in PSI; microgravity and 1g act as bounds.":"Outside the tested flight conditions."};
+}
+
+/* ---------- left rail ---------- */
+function buildMats(){const G={A:"Burned in microgravity",B:"Smoke tests only",C:"Flown, no microgravity test"};
+  $("mats").innerHTML=Object.entries(G).map(([k,g])=>`<div class="grp">${g}</div>`+D.mats.filter(m=>m.cat===k).map(m=>`<label class="mat"><input type="checkbox" data-k="${m.key}" ${S.sel.has(m.key)?"checked":""}><span class="dot" style="background:var(${S.colors[m.key]})"></span><span>${esc(m.name)}</span></label>`).join("")).join("");
+  $("mats").querySelectorAll("input").forEach(i=>i.onchange=()=>{i.checked?S.sel.add(i.dataset.k):S.sel.delete(i.dataset.k);update()})}
+function buildPresets(){$("presets").innerHTML=D.atm.map(a=>`<button class="btn" data-a="${a.key}" title="${esc(a.env)}: ${a.o2}% O₂ at ${a.psia} psia">${esc(a.short)}</button>`).join("");
+  $("presets").querySelectorAll("button").forEach(b=>b.onclick=()=>{const a=D.atm.find(x=>x.key===b.dataset.a);$("o2").value=a.o2;$("p").value=a.psia;$("g").value=/lunar|surface/.test(a.key)?"lunar":"micro";update()})}
+
+/* ---------- right rail ---------- */
+function renderRight(c){
+  const sel=[...S.sel].map(k=>({k,m:D.mats.find(x=>x.key===k),s:state(k,c)}));
+  const burn=sel.filter(x=>x.m.cat!=="B"),ok=burn.filter(x=>x.s.rank>=3),unt=burn.filter(x=>x.s.rank<3);
+  const covs=burn.map(x=>FAM[x.k]?cover(FAM[x.k]):null);const known=covs.filter(Boolean);
+  const combO2=known.length?Math.min(...known.map(v=>v.o2)):null;
+  const combP=known.length&&known.every(v=>v.pmin!=null)?Math.max(...known.map(v=>v.pmin)):null;
+  const noCond=burn.filter((x,i)=>!covs[i]).map(x=>x.m.name);
+  S.env={o2:combO2,p:combP};
+  let cls,pill,title,text;
+  if(!burn.length){cls="";pill='<span class="pill s-acc">Add burnable materials</span>';title="No burnable materials in this set";text="Smoke-only materials inform detection, not fire margin."}
+  else if(!unt.length){cls="ok";pill='<span class="pill s-ok">Covered by flight evidence</span>';title=`All ${burn.length} burnable materials have flight evidence here`;text="Every number is a fitted prediction or a real flight run. Open a material for its sources."}
+  else{const worst=unt[0];cls=ok.length?"warn":"";pill=`<span class="pill ${ok.length?"s-warn":"s-unk"}">${ok.length?"Partly covered":"Untested combination"}</span>`;
+    title=`${unt.length} of ${burn.length} burnable materials are untested here`;text=`The set is judged by its weakest evidence: ${unt.map(x=>x.m.name).join(", ")}. ${combO2!=null?`Together, this set has flight data only up to ${f1(combO2)}% O₂.`:""}${noCond.length?` No transcribed test conditions yet for ${noCond.join(", ")}.`:""}`}
+  $("verdict").className="verdict "+cls;$("verdict").innerHTML=`${pill}<h2>${esc(title)}</h2><p>${esc(text)}</p>`;
+  const pm=sel.find(x=>x.k==="pmma"&&x.s.v);
+  $("tiles").innerHTML=[["Materials in set",sel.length,`${burn.length} burnable · ${sel.length-burn.length} smoke-only`],["Evidence here",`${ok.length} / ${burn.length}`,"burnable with flight evidence"],["Set covered up to",combO2!=null?f1(combO2)+"%":"–","oxygen, all burnable materials"],pm?["PMMA flame travel",f1(pm.s.v*60)+" cm","in 10 minutes, predicted"]:["O₂ partial pressure",f2(c.o2/100*c.pk)+" kPa",f2(c.o2/100*c.psia)+" psia"]]
+    .map(x=>`<div class="tile"><div class="l">${x[0]}</div><div class="v">${x[1]}</div><div class="s">${x[2]}</div></div>`).join("");
+  $("cards").innerHTML=sel.sort((a,b)=>a.s.rank-b.s.rank).map(x=>{const fam=FAM[x.k],src=fam?[...new Set(runsOf(fam).map(r=>r.srcurl).filter(Boolean))]:[];
+    return `<div class="card"><div class="h"><b><span class="dot" style="background:var(${S.colors[x.k]})"></span><span style="overflow:hidden;text-overflow:ellipsis">${esc(x.m.name)}</span></b><span class="pill ${x.s.cls}">${x.s.lab}</span></div><div class="t">${esc(x.s.txt)}</div><details><summary>Why this?</summary><div class="why">${esc(x.s.why)}${fam?` ${runsOf(fam).length} runs in the evidence base.`:""}${src.length?" Sources: "+src.map((u,i)=>`<a href="${esc(u)}" target="_blank" rel="noopener">${i+1}</a>`).join(", "):""}</div></details></div>`}).join("")||'<p style="color:var(--muted);font-size:12.5px">Pick materials in the cabin set.</p>';
+  const ins=[];const has=k=>S.sel.has(k);
+  if(has("pmma")&&has("nomex"))ins.push(["PMMA next to Nomex","In Saffire II sample II-7, a flame on PMMA burned 5 cm of acrylic and did not spread into the attached Nomex."]);
+  if(has("silicone"))ins.push(["Earth tests mislead for silicone","Silicone burned in 1g tests but sustained no flame in 4 of 4 Saffire II samples in microgravity."]);
+  if(has("kapton")||has("teflon"))ins.push(["Detection gap for wiring smoke","Kapton and Teflon smoke has the smallest particles in SAME, while the ISS detector is most sensitive above 1 µm (SAME-R)."]);
+  if(has("pmma"))ins.push(["Space can be more flammable than Earth","PMMA kept spreading at 13.6% O₂ in BASS-II but blew off at 16% in 1g. Ultem, Nomex and Mylar tests found 1g limits up to 4 points higher than in microgravity."]);
+  if(c.g!=="micro")ins.push(["No partial-gravity data","PSI has no lunar or Mars gravity combustion data yet. Microgravity and 1g results bound what happens in between (future: LUCI, FM2)."]);
+  $("insights").innerHTML=ins.map(x=>`<div class="ins"><b>${esc(x[0])}</b><br>${esc(x[1])}</div>`).join("")||'<p style="color:var(--muted);font-size:12.5px">Add materials to see what the flights say about them together.</p>';
+  const bo=band("o2_pct",c.o2),bp=band("pressure_psia",c.psia),bu=band("airflow_cms",c.u);
+  $("screen").innerHTML=[[bo,`O₂ ${f1(c.o2)}%`],[bp,`${f1(c.psia)} psia`],[bu,`${f1(c.u)} cm/s`]].map(([b,l])=>`<span class="chip ${BC[b.c]}" title="${esc(b.i)}">${l}: ${esc(b.i)}</span>`).join("");
+  const fx=[];
+  if(combO2!=null&&c.o2>combO2)fx.push([`Keep oxygen at or below ${f1(combO2)}%`,"where the whole set has flight evidence"]);
+  unt.forEach(x=>fx.push([`Replace or flight-test ${x.m.name}`,x.s.txt]));
+  if(pm){const r=gpv(c.te,Math.max(17,c.o2-2))/pm.s.v;fx.push(["Lower oxygen by 2 points",`PMMA spread ×${r.toFixed(2)}`]);if(c.te*2<=5)fx.push([$("s").value==="two"?"Back the PMMA panel":"Double PMMA thickness",`spread ×${(gpv(c.te*2,c.o2)/pm.s.v).toFixed(2)}`])}
+  if(!fx.length)fx.push(["No change needed for evidence coverage","All burnable materials have flight evidence here"]);
+  $("fixes").innerHTML=fx.map(x=>`<div class="row"><span>${esc(x[0])}</span><span class="r">${esc(x[1])}</span></div>`).join("");
+}
+
+/* ---------- 3D evidence space (canvas) ---------- */
+const cv=$("cv"),ctx=cv.getContext("2d");
+const V={yaw:-0.75,pitch:0.42,zoom:1,spin:!matchMedia("(prefers-reduced-motion: reduce)").matches,hover:null,pts:[]};
+function setView(v){if(v==="iso"){V.yaw=-0.75;V.pitch=0.42}if(v==="top"){V.yaw=0;V.pitch=0}if(v==="side"){V.yaw=0;V.pitch=1.5}V.spin=false;draw()}
+function norm(a,v){const A=AXES[a];return v==null?null:((Math.min(Math.max(v,A.min),A.max)-A.min)/(A.max-A.min))*2-1}
+function proj(x,y,z){const cy=Math.cos(V.yaw),sy=Math.sin(V.yaw),cp=Math.cos(V.pitch),sp=Math.sin(V.pitch);
+  let X=x*cy-z*sy,Z=x*sy+z*cy;let Y=y*cp-Z*sp;Z=y*sp+Z*cp;const w=cv.clientWidth,h=cv.clientHeight,f=Math.min(w,h)*0.36*V.zoom,d=4.2;const s=d/(d+Z);return{x:w/2+X*f*s,y:h/2+28-Y*f*s,s,z:Z}}
+function line(a,b,col,wid=1,dash){const p=proj(...a),q=proj(...b);ctx.strokeStyle=col;ctx.lineWidth=wid;ctx.setLineDash(dash||[]);ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(q.x,q.y);ctx.stroke();ctx.setLineDash([])}
+function text(t,pt,col,align="center",size=11){const p=proj(...pt);ctx.fillStyle=col;ctx.font=`${size}px "JetBrains Mono",monospace`;ctx.textAlign=align;ctx.fillText(t,p.x,p.y)}
+function box(lo,hi,col,dash,fillA){const c=[];for(const x of[lo[0],hi[0]])for(const y of[lo[1],hi[1]])for(const z of[lo[2],hi[2]])c.push([x,y,z]);
+  const E=[[0,1],[2,3],[4,5],[6,7],[0,2],[1,3],[4,6],[5,7],[0,4],[1,5],[2,6],[3,7]];E.forEach(([i,j])=>line(c[i],c[j],col,1.5,dash));
+  if(fillA){const fl=[c[0],c[4],c[5],c[1]].map(v=>proj(...v));ctx.fillStyle=col;ctx.globalAlpha=fillA;ctx.beginPath();fl.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));ctx.closePath();ctx.fill();ctx.globalAlpha=1}}
+function draw(){
+  const dpr=Math.min(2,window.devicePixelRatio||1),w=cv.clientWidth,h=cv.clientHeight;if(cv.width!==w*dpr||cv.height!==h*dpr){cv.width=w*dpr;cv.height=h*dpr}ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,w,h);
+  const ax=$("ax").value,ay=$("ay").value,az=$("az").value,A=[AXES[ax],AXES[ay],AXES[az]],grid=css("--grid"),muted=css("--muted"),ink=css("--ink");
+  for(let i=0;i<=4;i++){const t=-1+i/2;line([t,-1,-1],[t,-1,1],grid);line([-1,-1,t],[1,-1,t],grid);line([-1,t,-1],[-1,t,1],grid);line([-1,-1,t],[-1,1,t],grid);line([t,-1,-1],[t,1,-1],grid);line([-1,t,-1],[1,t,-1],grid)}
+  box([-1,-1,-1],[1,1,1],grid);
+  for(let i=0;i<=4;i++){const t=-1+i/2,val=k=>{const a=AXES[k];return f1(a.min+(t+1)/2*(a.max-a.min)).replace(/\.0$/,"")};text(val(ax),[t,-1.12,1.12],muted);text(val(az),[1.14,-1.12,t],muted,"left");text(val(ay),[-1.1,t,1.1],muted,"right")}
+  text(`${A[0].name} (${A[0].unit})`,[0,-1.32,1.32],ink,"center",12);text(`${A[2].name} (${A[2].unit})`,[1.38,-1.25,0],ink,"left",12);text(`${A[1].name} (${A[1].unit})`,[-1.15,1.18,1.1],ink,"center",12);
+  const c=cond(),envAxes=["o2","p","pp","u"],allEnv=[ax,ay,az].every(k=>envAxes.includes(k));
+  // habitat design points
+  if(allEnv)D.atm.forEach(a=>{const vals={o2:a.o2,p:a.psia*KPA,pp:a.o2/100*a.psia*KPA,u:null};const P=[ax,ay,az].map(k=>norm(k,vals[k]));
+    const hasU=[ax,ay,az].indexOf("u");if(hasU>=0){const lo=[...P],hi=[...P];lo[hasU]=-1;hi[hasU]=1;line(lo,hi,css("--accent"),2,[2,4]);const lp=[...hi];text(a.short,[lp[0],lp[1]+0.08,lp[2]],css("--accent"),"center",10.5)}
+    else{const p=proj(...P);ctx.fillStyle=css("--accent");ctx.fillRect(p.x-4,p.y-4,8,8);text(a.short,[P[0],P[1]+0.09,P[2]],css("--accent"),"center",10.5)}});
+  const oi=[ax,ay,az].indexOf("o2");
+  if(!allEnv&&oi>=0){[...new Map(D.atm.map(a=>[a.o2,a])).values()].forEach(a=>{const P=[0,0,0];P[oi]=norm("o2",a.o2);const o=[0,1,2].filter(i=>i!==oi);
+    const a1=[...P],a2=[...P],a3=[...P];a1[o[0]]=-1;a1[1]=-1;a2[1]=-1;a2[o[0]===1?o[1]:o[0]]=1;
+    const f0=[...P],f1_=[...P];f0[1]=-1;f1_[1]=-1;const dz=o.find(i=>i!==1);if(dz!=null){f0[dz]=-1;f1_[dz]=1;line(f0,f1_,css("--accent"),1.6,[2,4])}
+    const v0=[...P],v1=[...P];if(oi!==1){const dzz=o.find(i=>i!==1);v0[1]=-1;v1[1]=1;if(dzz!=null){v0[dzz]=-1;v1[dzz]=-1}line(v0,v1,css("--accent"),1.6,[2,4]);text(a.short+" "+a.o2+"%",[v1[0],v1[1]+0.08,v1[2]],css("--accent"),"center",10.5)}})}
+  // model domain and combined envelope
+  if(allEnv&&S.sel.has("pmma")){const d=MODEL.dom,r={o2:d.o2,p:d.p,pp:[d.o2[0]/100*d.p[0],d.o2[1]/100*d.p[1]],u:d.u};box([0,1,2].map(i=>norm([ax,ay,az][i],r[[ax,ay,az][i]][0])),[0,1,2].map(i=>norm([ax,ay,az][i],r[[ax,ay,az][i]][1])),css("--ok"),[6,4],.12)}
+  if(allEnv&&S.env&&S.env.o2!=null&&[ax,ay,az].includes("o2")){const lo=[-1,-1,-1],hi=[1,1,1];const i=[ax,ay,az].indexOf("o2");hi[i]=norm("o2",S.env.o2);const j=[ax,ay,az].indexOf("p");if(j>=0&&S.env.p!=null)lo[j]=norm("p",S.env.p);box(lo,hi,css("--m2"),[2,3],.08)}
+  // runs
+  V.pts=[];const sel=[...S.sel];
+  D.runs.forEach(r=>{const key=Object.keys(FAM).find(k=>FAM[k]===r.fam);if(!key||!sel.includes(key))return;const v=[ax,ay,az].map(k=>AXES[k].get(r));if(v.some(x=>x==null))return;const P=v.map((x,i)=>norm([ax,ay,az][i],x)),p=proj(...P);V.pts.push({r,p,col:css(S.colors[key])})});
+  const hidden=D.runs.filter(r=>{const key=Object.keys(FAM).find(k=>FAM[k]===r.fam);return key&&sel.includes(key)}).length-V.pts.length;
+  V.pts.sort((a,b)=>b.p.z-a.p.z).forEach(({r,p,col})=>{const rad=Math.max(3,6.5*p.s);ctx.beginPath();ctx.arc(p.x,p.y,rad,0,7);
+    if(r.sus==="no"){ctx.strokeStyle=col;ctx.lineWidth=2.4;ctx.stroke()}else if(r.sus==="yes"){ctx.fillStyle=col;ctx.globalAlpha=.9;ctx.fill();ctx.globalAlpha=1;ctx.strokeStyle=css("--panel");ctx.lineWidth=1;ctx.stroke()}else{ctx.fillStyle=col;ctx.globalAlpha=.35;ctx.fill();ctx.globalAlpha=1}
+    if(V.hover&&V.hover.r===r){ctx.strokeStyle=ink;ctx.lineWidth=2;ctx.beginPath();ctx.arc(p.x,p.y,rad+4,0,7);ctx.stroke()}});
+  // current conditions
+  const cvals=[ax,ay,az].map(k=>AXES[k].cur(c));if(cvals.every(x=>x!=null)){const P=cvals.map((x,i)=>norm([ax,ay,az][i],x));line(P,[P[0],-1,P[2]],ink,1,[3,3]);const p=proj(...P);ctx.strokeStyle=ink;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(p.x-10,p.y);ctx.lineTo(p.x+10,p.y);ctx.moveTo(p.x,p.y-10);ctx.lineTo(p.x,p.y+10);ctx.stroke();ctx.beginPath();ctx.arc(p.x,p.y,14,0,7);ctx.stroke();text("your cabin",[P[0],P[1]+0.12,P[2]],ink,"center",11)}
+  $("foot").textContent=`${V.pts.length} flight runs shown${hidden>0?` · ${hidden} hidden (no value on a chosen axis)`:""} · drag to rotate · scroll or pinch to zoom`;
+}
+function legend(){const sel=[...S.sel].map(k=>D.mats.find(m=>m.key===k)).filter(m=>FAM[m.key]);
+  $("legend").innerHTML=sel.map(m=>`<span class="r"><span class="dot" style="background:var(${S.colors[m.key]})"></span>${esc(m.name)}</span>`).join("")+
+  `<span class="r" style="margin-top:4px;color:var(--muted)">● burned &nbsp;○ no sustained flame &nbsp;◌ not transcribed</span><span class="r" style="color:var(--muted)"><span style="color:var(--accent)">┆</span> NASA habitat design points</span>${S.sel.has("pmma")?'<span class="r" style="color:var(--ok)">▭ PMMA model range</span>':""}<span class="r" style="color:var(--m2)">▭ set covered by flight data</span>`}
+let drag=null;const pointers=new Map();
+cv.addEventListener("pointerdown",e=>{cv.setPointerCapture(e.pointerId);pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});drag={x:e.clientX,y:e.clientY};V.spin=false;$("spin").classList.remove("on")});
+cv.addEventListener("pointermove",e=>{const r=cv.getBoundingClientRect(),mx=e.clientX-r.left,my=e.clientY-r.top;
+  if(pointers.has(e.pointerId)){const prev=pointers.get(e.pointerId);pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
+    if(pointers.size===2){const [a,b]=[...pointers.values()];const d1=Math.hypot(a.x-b.x,a.y-b.y);const o=[...pointers.entries()].find(([k])=>k!==e.pointerId)[1];const d0=Math.hypot(prev.x-o.x,prev.y-o.y);if(d0>0)V.zoom=Math.min(2.6,Math.max(.5,V.zoom*d1/d0));draw();return}
+    if(drag){V.yaw+=(e.clientX-drag.x)*0.008;V.pitch=Math.max(-1.55,Math.min(1.55,V.pitch+(e.clientY-drag.y)*0.008));drag={x:e.clientX,y:e.clientY};draw()}return}
+  let best=null,bd=144;V.pts.forEach(pt=>{const d=(pt.p.x-mx)**2+(pt.p.y-my)**2;if(d<bd){bd=d;best=pt}});V.hover=best;const tip=$("tip");
+  if(best){const r=best.r;tip.hidden=false;tip.innerHTML=`<b>${esc(r.inv)} ${esc(r.id)}${r.seg>1?" · seg "+r.seg:""}</b><br>${esc(r.mat)}${r.t!=null?", "+r.t+" mm":""}<br><span class="mono">${r.o2!=null?f1(r.o2)+"% O₂":""}${r.p!=null?" · "+f1(r.p)+" kPa":""}${r.u!=null?" · "+r.u+" cm/s":""}</span><br>${r.cfg||""} · ${r.v!=null?"spread "+r.v+" mm/s":esc(r.out)}<br><span style="color:var(--muted)">${esc(r.q)}</span>`;
+    const tx=Math.min(mx+14,cv.clientWidth-270),ty=Math.min(my+14,cv.clientHeight-120);tip.style.left=Math.max(8,tx)+"px";tip.style.top=Math.max(8,ty)+"px"}else tip.hidden=true;draw()});
+const endP=e=>{pointers.delete(e.pointerId);if(!pointers.size)drag=null};cv.addEventListener("pointerup",endP);cv.addEventListener("pointercancel",endP);cv.addEventListener("pointerleave",()=>{$("tip").hidden=true;V.hover=null});
+cv.addEventListener("wheel",e=>{e.preventDefault();V.zoom=Math.min(2.6,Math.max(.5,V.zoom*(e.deltaY<0?1.08:.93)));draw()},{passive:false});
+document.querySelectorAll("[data-view]").forEach(b=>b.onclick=()=>setView(b.dataset.view));
+$("spin").onclick=()=>{V.spin=!V.spin;$("spin").classList.toggle("on",V.spin)};$("spin").classList.toggle("on",V.spin);
+let last=0;function loop(t){if(V.spin&&!document.hidden){V.yaw+=(t-last)/1000*0.18;draw()}last=t;requestAnimationFrame(loop)}requestAnimationFrame(loop);
+new ResizeObserver(()=>draw()).observe(cv);
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change",()=>{legend();draw()});
+new MutationObserver(()=>{legend();draw()}).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});
+
+/* ---------- wiring ---------- */
+function update(){const c=cond();$("o2v").textContent=f1(c.o2)+"%";$("pv").textContent=f1(c.psia)+" psia · "+f1(c.pk)+" kPa";$("uv").textContent=f1(c.u)+" cm/s";$("tv").textContent=f1(c.t)+" mm";
+  document.querySelectorAll("#presets button").forEach(b=>{const a=D.atm.find(x=>x.key===b.dataset.a);b.classList.toggle("on",Math.abs(a.o2-c.o2)<.05&&Math.abs(a.psia-c.psia)<.05)});
+  renderRight(c);legend();draw()}
+axisOptions($("ax"),"o2");axisOptions($("ay"),"u");axisOptions($("az"),"t");["ax","ay","az"].forEach(id=>$(id).addEventListener("input",draw));
+["o2","p","u","cfg","t","s","g"].forEach(id=>$(id).addEventListener("input",update));
+$("count").textContent=`${D.runs.length} flight runs · ${D.mats.length} materials · NASA PSI, NTRS, NIST`;
+buildMats();buildPresets();update();
+</script>

@@ -1,0 +1,678 @@
+<title>PrF-G Mission Console</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<style>
+/* Layout: full-screen mission console. Header (mission, MET, phase) / phase rail | trajectory chart | vehicle state / cabin telemetry strip.
+   PrF-G lives in a capsule bottom-right and opens as a full-height dashboard over the console. Deliberately dark: flight-deck night lighting. */
+:root{
+  color-scheme:dark;
+  --bg:#070c12; --bg-2:#0b121b; --panel:#0f1822; --panel-2:#142030; --line:#1c2a3a; --line-2:#28394d;
+  --ink:#e8eef4; --ink-2:#a7b6c6; --muted:#6d8197;
+  --traj:#6ec7ef; --traj-2:#c9a2ff; --traj-soft:rgba(110,199,239,.12);
+  --ok:#55d39f; --ok-soft:rgba(85,211,159,.13);
+  --warn:#f3b641; --warn-soft:rgba(243,182,65,.14);
+  --bad:#ff6a5c; --bad-soft:rgba(255,106,92,.14);
+  --unk:#a89bf2; --unk-soft:rgba(168,155,242,.14);
+  --stby:#8aa0b6; --stby-soft:rgba(138,160,182,.14);
+  --f-display:"Barlow Condensed","Arial Narrow",Arial,sans-serif;
+  --f-body:"Barlow",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{height:100%;background:var(--bg);color:var(--ink)}
+body{margin:0;font-family:var(--f-body);font-size:15px;line-height:1.4;overflow:hidden;
+  background:radial-gradient(1200px 600px at 70% -10%,rgba(110,199,239,.07),transparent 60%),var(--bg)}
+button,select,input{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--traj);outline-offset:2px}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.lab{font-family:var(--f-display);font-weight:600;letter-spacing:.1em;text-transform:uppercase;font-size:12px;color:var(--muted)}
+.note{color:var(--muted);font-size:13px}
+.app{height:100%;display:grid;grid-template-rows:auto 1fr auto;gap:10px;
+  padding-block:10px 12px;padding-left:max(14px,env(safe-area-inset-left,0px));padding-right:max(14px,env(safe-area-inset-right,0px))}
+
+/* header */
+.top{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px}
+.brand svg{width:30px;height:30px}
+.brand b{font-family:var(--f-display);font-weight:700;font-size:22px;letter-spacing:.05em}
+.brand span{color:var(--ink-2);font-size:13px}
+.met{display:flex;align-items:baseline;gap:10px;margin-left:8px}
+.met .clock{font-family:var(--f-mono);font-size:30px;font-weight:600;letter-spacing:.02em}
+.phasepill{font-family:var(--f-display);font-weight:600;letter-spacing:.1em;text-transform:uppercase;font-size:13px;padding:4px 12px;border-radius:999px;border:1px solid var(--line-2);color:var(--traj)}
+.top .sp{flex:1}
+.btn{background:var(--panel-2);border:1px solid var(--line-2);border-radius:8px;padding:7px 12px;cursor:pointer;font-weight:500;white-space:nowrap}
+.btn:hover{border-color:var(--traj)}
+.btn.primary{background:var(--traj);border-color:var(--traj);color:#04121c;font-weight:600}
+.btn.small{padding:4px 10px;font-size:13px}
+.btn[aria-pressed="true"]{border-color:var(--traj);color:var(--traj)}
+
+/* main grid */
+.main{display:grid;grid-template-columns:230px minmax(0,1fr) 270px;gap:10px;min-height:0}
+.panel{background:linear-gradient(180deg,var(--panel),var(--bg-2));border:1px solid var(--line);border-radius:12px;padding:12px 14px;min-width:0;min-height:0}
+.panel h2{margin:0 0 8px;font-family:var(--f-display);font-weight:600;font-size:13.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-2);display:flex;justify-content:space-between;align-items:center;gap:8px}
+
+/* phase rail */
+.rail{display:flex;flex-direction:column;gap:2px;overflow:auto}
+.ph{display:grid;grid-template-columns:18px 1fr;gap:10px;padding:8px 6px;border-radius:8px;position:relative}
+.ph .dot{width:12px;height:12px;border-radius:50%;border:2px solid var(--line-2);margin-top:4px;background:var(--bg)}
+.ph:not(:last-child)::after{content:"";position:absolute;left:11px;top:22px;bottom:-8px;width:2px;background:var(--line)}
+.ph.done .dot{background:var(--traj);border-color:var(--traj)}
+.ph.done::after{background:var(--traj)}
+.ph.now{background:var(--traj-soft)}
+.ph.now .dot{border-color:var(--traj);box-shadow:0 0 0 4px rgba(110,199,239,.18)}
+.ph b{display:block;font-weight:600}
+.ph small{color:var(--muted);font-size:12.5px}
+.ph .atm{font-family:var(--f-mono);font-size:11.5px;color:var(--ink-2)}
+
+/* chart */
+.chartwrap{display:flex;flex-direction:column;gap:8px;min-height:0}
+.ctabs{display:flex;gap:4px}
+.ctabs button{background:transparent;border:1px solid var(--line);border-radius:999px;padding:3px 11px;cursor:pointer;font-family:var(--f-display);font-weight:600;letter-spacing:.08em;text-transform:uppercase;font-size:12px;color:var(--ink-2)}
+.ctabs button[aria-pressed="true"]{border-color:var(--traj);color:var(--traj);background:var(--traj-soft)}
+.canvasbox{position:relative;flex:1;min-height:220px}
+#chart{position:absolute;inset:0;width:100%;height:100%}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12.5px;color:var(--ink-2)}
+.legend i{display:inline-block;width:14px;height:3px;border-radius:2px;vertical-align:middle;margin-right:6px}
+
+/* vehicle state */
+.vs{display:flex;flex-direction:column;gap:10px;overflow:auto}
+.big{display:flex;flex-direction:column;gap:2px;padding-bottom:10px;border-bottom:1px solid var(--line)}
+.big .v{font-family:var(--f-mono);font-size:28px;font-weight:500;line-height:1.1}
+.big .v small{font-size:13px;color:var(--muted);margin-left:4px}
+.gbar{height:6px;border-radius:3px;background:var(--line);overflow:hidden;margin-top:4px}
+.gbar i{display:block;height:100%;background:var(--traj);transition:width .3s}
+
+/* telemetry strip */
+.strip{display:grid;grid-template-columns:repeat(6,minmax(0,1fr)) 260px;gap:10px}
+.tcard{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:9px 12px;min-width:0}
+.tcard .row{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.tcard .v{font-family:var(--f-mono);font-size:21px}
+.tcard .v small{font-size:12px;color:var(--muted);margin-left:3px}
+.tcard svg{width:100%;height:30px;display:block;margin-top:4px}
+.dock{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:9px 12px;display:flex;flex-direction:column;gap:7px}
+.dock .row{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.dock select{background:var(--panel-2);border:1px solid var(--line-2);border-radius:8px;padding:4px 6px}
+
+/* PrF-G capsule (top of right column) */
+.rcol{display:flex;flex-direction:column;gap:10px;min-height:0}
+.rcol .vs{flex:1}
+.capsule{display:flex;flex-direction:column;align-items:stretch;gap:4px;text-align:left;cursor:pointer;padding:12px 14px 12px 16px;border-radius:12px;
+  background:linear-gradient(180deg,var(--panel-2),var(--panel));border:1px solid var(--line-2);box-shadow:inset 5px 0 0 var(--sc,var(--stby))}
+.capsule:hover{border-color:var(--sc,var(--traj))}
+.capsule .ck{display:flex;gap:8px;align-items:baseline}
+.capsule .k{font-family:var(--f-display);font-weight:700;letter-spacing:.06em;font-size:15px}
+.capsule .s{font-family:var(--f-display);font-weight:700;font-size:34px;letter-spacing:.04em;color:var(--sc,var(--stby));line-height:1}
+.capsule .r{font-size:13px;color:var(--ink-2);line-height:1.35}
+.capsule .cbtn{margin-top:6px;text-align:center}
+.capsule.alert{animation:pulse 1.6s ease-out 3}
+@keyframes pulse{0%{box-shadow:0 0 0 0 var(--sc),inset 5px 0 0 var(--sc)}100%{box-shadow:0 0 0 16px transparent,inset 5px 0 0 var(--sc)}}
+
+/* overlays */
+.overlay{position:fixed;inset:0;z-index:30;background:rgba(3,7,11,.62);backdrop-filter:blur(3px);display:flex;justify-content:flex-end}
+.drawer{width:min(1180px,100%);height:100%;background:var(--bg-2);border-left:1px solid var(--line-2);overflow:auto;
+  padding-block:calc(14px + env(safe-area-inset-top,0px)) 24px;padding-left:20px;padding-right:max(20px,env(safe-area-inset-right,0px));
+  display:flex;flex-direction:column;gap:12px;animation:slide .28s ease-out}
+@keyframes slide{from{transform:translateX(40px);opacity:.4}to{transform:none;opacity:1}}
+.dhead{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.dhead h2{margin:0;font-family:var(--f-display);font-weight:700;font-size:24px;letter-spacing:.05em}
+.dhead .sub{color:var(--ink-2);font-size:13px}
+.pill{display:inline-flex;align-items:center;border-radius:999px;padding:2px 10px;font-size:12px;font-weight:600;font-family:var(--f-display);letter-spacing:.07em;text-transform:uppercase;line-height:1.3}
+.s-ok{background:var(--ok-soft);color:var(--ok)}.s-warn{background:var(--warn-soft);color:var(--warn)}.s-bad{background:var(--bad-soft);color:var(--bad)}.s-unk{background:var(--unk-soft);color:var(--unk)}.s-stby{background:var(--stby-soft);color:var(--stby)}.s-acc{background:var(--traj-soft);color:var(--traj)}.s-mute{background:var(--panel-2);color:var(--ink-2)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.band{display:grid;grid-template-columns:auto 1fr auto;gap:22px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px 20px;position:relative;overflow:hidden}
+.band::before{content:"";position:absolute;inset:0 auto 0 0;width:7px;background:var(--sc,var(--stby))}
+.band .word{font-family:var(--f-display);font-weight:700;font-size:52px;line-height:.9;letter-spacing:.03em;color:var(--sc,var(--stby));padding-left:6px}
+.band .reason{font-size:18px;line-height:1.35;min-width:0}
+.band .reason small{display:block;color:var(--ink-2);font-size:13.5px;margin-top:5px}
+.band .side{display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+.dgrid{display:grid;grid-template-columns:1.25fr 1fr;gap:12px}
+.dcol{display:flex;flex-direction:column;gap:12px;min-width:0}
+.tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.tile{background:var(--panel-2);border:1px solid var(--line);border-radius:10px;padding:10px 12px;min-width:0}
+.tile .v{font-family:var(--f-mono);font-size:24px;margin-top:2px}
+.tile .s{font-size:12.5px;color:var(--muted)}
+.trend{display:flex;gap:12px;align-items:center;background:var(--panel-2);border:1px dashed var(--line-2);border-radius:10px;padding:10px 12px;margin-top:10px}
+.trend .a{font-family:var(--f-mono);font-size:22px;color:var(--warn)}
+.mat{border-top:1px solid var(--line);padding:9px 0;display:flex;flex-direction:column;gap:3px}
+.mat:first-child{border-top:0}
+.mat .t{display:flex;justify-content:space-between;gap:10px;align-items:center}
+details summary{cursor:pointer;color:var(--traj);font-size:13px;list-style:none}
+details summary::-webkit-details-marker{display:none}
+details .why{font-size:13px;color:var(--ink-2);margin-top:4px}
+.opt{background:var(--panel-2);border:1px solid var(--line-2);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:6px}
+.opt+.opt{margin-top:10px}
+.opt .t{font-weight:600;font-size:16px}
+.opt .e{font-size:13.5px;color:var(--ink-2)}
+.opt .acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
+.log{max-height:230px;overflow:auto}
+.log .row{display:grid;grid-template-columns:auto 1fr auto;gap:8px;font-size:13px;padding:6px 0;border-top:1px solid var(--line)}
+.log .row:first-child{border-top:0}
+.tag{font-family:var(--f-display);font-weight:600;letter-spacing:.06em;font-size:11px;padding:1px 6px;border-radius:4px;text-transform:uppercase;white-space:nowrap}
+.ai{border:1px dashed var(--unk);border-radius:14px;background:linear-gradient(180deg,rgba(168,155,242,.06),transparent 60%),var(--panel);padding:12px 14px}
+.ai h3{margin:0;font-family:var(--f-display);font-weight:700;letter-spacing:.1em;text-transform:uppercase;font-size:14px;color:var(--unk)}
+.aig{display:grid;grid-template-columns:1.4fr 1fr;gap:12px;margin-top:10px}
+.qchips{display:flex;flex-wrap:wrap;gap:6px}
+.qchips button{background:var(--panel-2);border:1px solid var(--line-2);border-radius:999px;padding:4px 11px;cursor:pointer;font-size:13px}
+.qchips button:hover{border-color:var(--unk)}
+.askrow{display:flex;gap:8px;margin-top:8px}
+.askrow input{flex:1;min-width:0;background:var(--bg);border:1px solid var(--line-2);border-radius:8px;padding:7px 10px}
+.answer{margin-top:8px;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px 12px;font-size:13.5px;line-height:1.55;min-height:60px}
+.cite{font-family:var(--f-mono);font-size:11.5px;color:var(--unk);margin-top:6px}
+.nn{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+.nn .row{display:flex;justify-content:space-between;gap:10px;font-size:13.5px;padding:3px 0}
+
+/* config modal */
+.modal{position:fixed;inset:0;z-index:40;background:rgba(3,7,11,.78);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;
+  padding-block:20px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.card{width:min(1220px,100%);max-height:100%;overflow:auto;background:var(--bg-2);border:1px solid var(--line-2);border-radius:16px;padding:20px 22px;display:flex;flex-direction:column;gap:14px}
+.card h1{margin:0;font-family:var(--f-display);font-weight:700;font-size:30px;letter-spacing:.04em}
+.cgrid{display:grid;grid-template-columns:1fr 1.3fr;gap:16px}
+.atm{width:100%;border-collapse:collapse;font-size:14px}
+.atm th{font-family:var(--f-display);font-weight:600;letter-spacing:.08em;text-transform:uppercase;font-size:11.5px;color:var(--muted);text-align:left;padding:6px;border-bottom:1px solid var(--line)}
+.atm td{padding:6px;border-bottom:1px solid var(--line);vertical-align:middle}
+.atm input,.atm select,.field input,.field select{background:var(--bg);border:1px solid var(--line-2);border-radius:7px;padding:6px 8px;width:100%;min-width:0}
+.atm input[type=number]{width:78px}
+.atm input[type=checkbox]{width:auto}
+.fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.field{display:flex;flex-direction:column;gap:4px}
+.field label{font-family:var(--f-display);font-weight:600;letter-spacing:.08em;text-transform:uppercase;font-size:11.5px;color:var(--ink-2)}
+.tw{overflow-x:auto}
+.pf{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.pf .tile .v{font-family:var(--f-display);font-weight:700;font-size:24px;letter-spacing:.04em}
+.go{display:flex;gap:12px;align-items:center;justify-content:flex-end;flex-wrap:wrap}
+
+@media (max-width:1100px){
+  body{overflow:auto}.app{height:auto}
+  .main{grid-template-columns:1fr}.canvasbox{min-height:280px}
+  .strip{grid-template-columns:repeat(2,minmax(0,1fr))}.dock{grid-column:1/-1}
+  .rail{flex-direction:row;overflow-x:auto}.ph::after{display:none}.ph{min-width:150px}
+  .capsule{position:sticky;top:8px;z-index:20}
+  .dgrid,.aig,.cgrid{grid-template-columns:1fr}.band{grid-template-columns:1fr}.band .side{align-items:flex-start}
+  .tiles,.pf{grid-template-columns:1fr 1fr}.fields{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<div class="app">
+  <header class="top">
+    <div class="brand">
+      <svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="18" fill="none" stroke="#6ec7ef" stroke-width="2"/><path d="M20 9c4 6 7 9 7 14a7 7 0 0 1-14 0c0-3 1.5-5 3.5-7 .3 2.5 1.5 4 3 4.6C18.5 17 18.6 13 20 9z" fill="none" stroke="#e8eef4" stroke-width="2" stroke-linejoin="round"/><path d="M8 31 32 9" stroke="#6ec7ef" stroke-width="2"/></svg>
+      <div><b>PrF-G</b> <span>Mission console</span></div>
+    </div>
+    <div class="met"><span class="lab">MET</span><span class="clock" id="met">T−00:02:00</span></div>
+    <span class="phasepill" id="phase">Pre-launch</span>
+    <span class="note" id="mname"></span>
+    <span class="sp"></span>
+    <button class="btn small" id="voice" aria-pressed="false">Voice alerts off</button>
+    <button class="btn small" id="cfgbtn">Mission configuration</button>
+  </header>
+
+  <div class="main">
+    <section class="panel rail" aria-label="Mission phases"><h2>Mission phases</h2><div id="rail"></div></section>
+
+    <section class="panel chartwrap">
+      <h2><span id="ctitle">Ascent profile</span>
+        <span class="ctabs" role="group" aria-label="Chart"><button data-c="ascent">Ascent</button><button data-c="coast">Translunar</button><button data-c="cabin">Cabin O₂</button></span></h2>
+      <div class="canvasbox"><canvas id="chart"></canvas></div>
+      <div class="legend" id="legend"></div>
+    </section>
+
+    <div class="rcol">
+    <button class="capsule" id="capsule" type="button" aria-label="Open PrF-G dashboard">
+      <div class="ck"><span class="k">PrF-G</span><span class="note">fire margin</span></div>
+      <div class="s" id="cap-s">STANDBY</div><div class="r" id="cap-r"></div>
+      <span class="btn primary cbtn">Open PrF-G dashboard</span>
+    </button>
+    <section class="panel vs" aria-label="Vehicle state">
+      <h2>Vehicle state</h2>
+      <div class="big"><span class="lab" id="v1l">Altitude</span><span class="v" id="v1">0<small>km</small></span></div>
+      <div class="big"><span class="lab">Velocity</span><span class="v" id="v2">0.00<small>km/s</small></span></div>
+      <div class="big"><span class="lab">Acceleration</span><span class="v" id="v3">1.0<small>g</small></span><div class="gbar"><i id="gbar"></i></div></div>
+      <div class="big"><span class="lab">Gravity regime</span><span class="v" id="v4" style="font-size:20px">1 g</span></div>
+      <div><span class="lab">Cabin design point</span><div class="mono" id="v5" style="margin-top:3px"></div></div>
+      <p class="note" style="margin:0">Trajectory is an illustrative profile, not a real vehicle. Cabin readings are simulated.</p>
+    </section>
+    </div>
+  </div>
+
+  <div class="strip">
+    <div class="tcard" id="t-o2"></div><div class="tcard" id="t-p"></div><div class="tcard" id="t-pp"></div><div class="tcard" id="t-u"></div><div class="tcard" id="t-temp"></div><div class="tcard" id="t-smoke"></div>
+    <div class="dock" aria-label="Simulation controls">
+      <div class="row"><span class="pill s-unk">Simulation</span><button class="btn small" id="play">Pause</button><select id="speed" aria-label="Speed"><option value="1">1×</option><option value="2">2×</option><option value="4">4×</option></select><select id="jump" aria-label="Jump to phase"></select></div>
+      <div class="row"><span class="note">Inject:</span><button class="btn small" data-ev="drift">O₂ drift</button><button class="btn small" data-ev="cargo">Unpack cargo</button><button class="btn small" data-ev="dust">Dust work</button><button class="btn small" data-ev="fan">Fan failure</button></div>
+    </div>
+  </div>
+</div>
+
+
+<!-- PrF-G dashboard -->
+<div class="overlay" id="dash" hidden>
+  <div class="drawer" role="dialog" aria-modal="true" aria-labelledby="dtitle">
+    <div class="dhead">
+      <h2 id="dtitle">PrF-G</h2><span class="sub">Prevent Fire-Guard Neural Network · advisory layer over existing telemetry</span>
+      <span style="flex:1"></span><span class="mono" id="d-met"></span><button class="btn" id="close">Close</button>
+    </div>
+    <section class="band" id="band">
+      <div class="word" id="b-word">—</div>
+      <div class="reason" id="b-reason"></div>
+      <div class="side"><div class="chips" id="b-chips"></div><button class="btn" id="ack" hidden>Acknowledge</button></div>
+    </section>
+    <div class="dgrid">
+      <div class="dcol">
+        <section class="panel"><h2>Fire margin <span class="pill s-acc">PrF-G</span></h2><div class="tiles" id="tiles"></div><div class="trend" id="trend"></div><div class="chips" id="screen" style="margin-top:10px"></div></section>
+        <section class="panel"><h2>Exposed materials <span class="note" id="mcount"></span></h2><div id="mats"></div></section>
+      </div>
+      <div class="dcol">
+        <section class="panel"><h2>Options for the crew <span class="pill s-mute">crew decides</span></h2><div id="opts"></div></section>
+        <section class="panel"><h2>Alerts and decisions</h2><div class="log" id="log"></div></section>
+      </div>
+    </div>
+    <section class="ai" aria-labelledby="aih">
+      <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center"><h3 id="aih">AI window</h3><span class="note">Firewalled: nothing here changes the status, alerts or options above.</span></div>
+      <div class="aig">
+        <div><div class="qchips" id="qchips"></div>
+          <form class="askrow" id="askform"><input id="askq" placeholder="Ask about the current cabin" aria-label="Question"><button class="btn" type="submit">Ask</button></form>
+          <div class="answer" id="answer"><span class="note">Answers come from the same NASA evidence as the margin and cite the runs they use.</span></div></div>
+        <div><div class="lab" style="margin-bottom:6px">Neural network · second opinion</div><div class="nn" id="nn"></div></div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<!-- Mission configuration (before launch) -->
+<div class="modal" id="cfg">
+  <div class="card" role="dialog" aria-modal="true" aria-labelledby="cfgh">
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap">
+      <div><span class="lab">Before launch</span><h1 id="cfgh">Mission configuration</h1><p class="note" style="margin:4px 0 0">Every vehicle and mission is different. These inputs set the cabin design points and the material inventory PrF-G screens against.</p></div>
+      <div class="chips" id="presets"></div>
+    </div>
+    <div class="cgrid">
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div class="fields">
+          <div class="field" style="grid-column:1/-1"><label for="c-name">Mission name</label><input id="c-name"></div>
+          <div class="field"><label for="c-u">Nominal ventilation (cm/s)</label><input id="c-u" type="number" min="0" max="40" step="0.5"></div>
+          <div class="field"><label for="c-band">O₂ caution offset (points)</label><input id="c-band" type="number" min="0.2" max="5" step="0.1"></div>
+          <div class="field" style="grid-column:1/-1"><label for="c-det">Smoke detection</label><select id="c-det"><option value="inhibit">Inhibited during dust-generating work (as on ISS)</option><option value="always">Always on</option></select></div>
+        </div>
+        <div><div class="lab" style="margin-bottom:6px">Cabin design point by phase</div>
+          <table class="atm"><thead><tr><th>Phase</th><th>O₂ %</th><th>psia</th><th>Gravity</th></tr></thead><tbody id="atmbody"></tbody></table>
+          <p class="note" style="margin:6px 0 0">Defaults: sea-level air at launch; 10.2 psia exploration air in transit (NASA standards allow up to 30% O₂ there; 26.5% is an example); lunar habitat design point 34% at 8.2 psia.</p></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px;min-width:0">
+        <div class="lab">Material inventory</div>
+        <div class="tw"><table class="atm"><thead><tr><th>Item</th><th>Material</th><th>Exposed</th><th>Stowable</th><th>PMMA mm</th><th></th></tr></thead><tbody id="invbody"></tbody></table></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap"><select id="addmat" class="btn" aria-label="Material to add"></select><button class="btn" id="addbtn" type="button">Add item</button></div>
+      </div>
+    </div>
+    <div><div class="lab" style="margin-bottom:6px">Preflight evidence check · status at each design point</div><div class="pf" id="pf"></div></div>
+    <div class="go"><span class="note">Telemetry is simulated. Evidence and model come from NASA microgravity fire experiments.</span><button class="btn" id="cfgcancel" type="button" hidden>Back to console</button><button class="btn primary" id="golaunch" type="button">Go for launch</button></div>
+  </div>
+</div>
+
+<script>
+const D=__DATA__, GP=__GP__;
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const KPA=6.89476,f1=x=>(+x).toFixed(1),f2=x=>(+x).toFixed(2);
+const clone=o=>JSON.parse(JSON.stringify(o));
+
+/* ================= evidence engine (same rules as the backend status logic) ================= */
+function gpPredict(te,o2){const z=[(Math.log(te)-GP.mu[0])/GP.sd[0],(o2-GP.mu[1])/GP.sd[1]];const k=GP.Z.map(r=>GP.c*Math.exp(-0.5*(((r[0]-z[0])/GP.ls[0])**2+((r[1]-z[1])/GP.ls[1])**2)));
+  let m=0,q=0;for(let i=0;i<k.length;i++){m+=k[i]*GP.alpha[i];let s=0;const row=GP.Kinv[i];for(let j=0;j<k.length;j++)s+=row[j]*k[j];q+=k[i]*s}
+  return{mu:GP.ym+GP.ys*m,sd:Math.sqrt(Math.max(0,GP.c-q+GP.noise))*GP.ys}}
+const DOM={te:[0.5,5],o2:[17,22.5],u:[2,21],p:[97,103]};
+const FAM={sibal:"sibal_fabric",cotton_jersey:"cotton_fabric",pmma:"pmma",pmma_structured:"pmma_structured",nomex:"nomex_fabric",silicone:"silicone",nomex_ht90_40:"nomex_ht90_fabric",ultem_1000:"ultem_film",mylar_g:"mylar_film"};
+const runsOf=f=>D.runs.filter(r=>r.fam===f), MAT=k=>D.mats.find(m=>m.key===k);
+const bandOf=(p,v)=>D.bands.find(x=>x.p===p&&v>=x.a&&v<x.b)||D.bands.filter(x=>x.p===p).slice(-1)[0];
+function inDomain(te,o2,u,pk){const w=[];if(te<DOM.te[0]||te>DOM.te[1])w.push("thickness");if(o2<DOM.o2[0]||o2>DOM.o2[1])w.push("oxygen");if(u<DOM.u[0]||u>DOM.u[1])w.push("airflow");if(pk<DOM.p[0]||pk>DOM.p[1])w.push("pressure");return w}
+const nearest=(f,o2,pk,u)=>runsOf(f).filter(r=>r.o2!=null).map(r=>({r,d:Math.hypot((r.o2-o2)/3,((r.u??u)-u)/10,r.p!=null?(r.p-pk)/20:0.5)})).sort((a,b)=>a.d-b.d)[0];
+function ceiling(f){const rs=runsOf(f).filter(r=>r.o2!=null&&r.sus!=="");return rs.length?rs.reduce((a,b)=>b.o2>a.o2?b:a):null}
+const rid=r=>`${r.inv}:${r.id}${r.seg>1?"-s"+r.seg:""}`;
+function matState(it,o2,pk,u,g){
+  const m=MAT(it.key),f=FAM[it.key];if(!m)return{st:"unk",lab:"Unknown",txt:"",why:"",runs:[]};
+  if(m.cat==="B")return{st:"smoke",lab:"Smoke data only",txt:m.ev,why:`${m.name} was heated in SAME / SAME-R to study its smoke, not burned. Not counted as burnable evidence.`,runs:[]};
+  if(m.cat==="C")return{st:"unk",lab:"No microgravity test",txt:"Used on spacecraft; no microgravity burn or smoke test found",why:"No NASA microgravity fire test for this material in the evidence base.",runs:[]};
+  if(f==="pmma"&&g==="micro"&&it.t){const te=it.sides==="two"?it.t/2:it.t;if(!inDomain(te,o2,u,pk).length){const p=gpPredict(te,o2),v=Math.exp(p.mu);return{st:"ok",lab:"Supported",v,txt:`model: spread ${v.toFixed(3)} mm/s`,why:`Gaussian process on 39 BASS-II segments from 18 PMMA tests (NASA/TM-20210011385, Table 5.1); held-out typical error ×${GP.err.toFixed(2)}.`,runs:[]}}}
+  if(it.key==="nomex"){const ids=runsOf(f).map(rid);if(g==="micro"&&o2<=23)return{st:"near",lab:"Flight data",txt:"No sustained flame in 3 of 3 BASS-II tests at station-air oxygen or lower",why:"BASS-II F1–F3 (NASA/TM-20210011385, Section 3.1).",runs:ids};
+    return{st:"unk",lab:"Untested here",txt:"No flame in BASS-II, but only at station-air oxygen or lower",why:`BASS-II F1–F3 ran at station-air oxygen or lower; nothing is known at ${f1(o2)}% O₂${g!=="micro"?" or outside microgravity":""}.`,runs:ids}}
+  if(!f)return{st:"unk",lab:"Untested here",txt:"Burned in microgravity; run values not transcribed",why:m.inv?`Reported in ${m.inv}.`:"",runs:[]};
+  const n=nearest(f,o2,pk,u);if(n&&n.d<=1.2&&g==="micro"){const r=n.r;return{st:"near",lab:"Flight data",txt:`nearest run ${r.inv} ${r.id}: ${r.v!=null?"spread "+r.v+" mm/s":r.out}`,why:"A NASA run sits close to these conditions; shown as data, not a prediction.",runs:[rid(r)]}}
+  const c=ceiling(f);return{st:"unk",lab:"Untested here",txt:c?`evidence only up to ${f1(c.o2)}% O₂`:"no transcribed conditions",why:(g!=="micro"?"NASA PSI has no partial-gravity fire data; microgravity results act only as a bound. ":"Outside the tested conditions. ")+(c?`Highest O₂ with a result: ${rid(c)}.`:""),runs:c?[rid(c)]:[]};
+}
+const ST={STANDBY:{c:"var(--stby)",p:"s-stby",alert:null},NOMINAL:{c:"var(--ok)",p:"s-ok",alert:null},REDUCED:{c:"var(--warn)",p:"s-warn",alert:"ADVISORY"},UNVERIFIED:{c:"var(--unk)",p:"s-unk",alert:"ADVISORY"},LOW:{c:"var(--bad)",p:"s-bad",alert:"CAUTION"}};
+const ORDER=["STANDBY","NOMINAL","REDUCED","UNVERIFIED","LOW"];
+function evaluate(X){ // X: {inv, now:{o2,psia,u}, design:{o2,psia}, g, band}
+  const {o2,psia,u}=X.now,pk=psia*KPA,g=X.g;
+  const states=X.inv.filter(i=>i.exposed).map(i=>({i,s:matState(i,o2,pk,u,g)}));
+  const burn=states.filter(x=>x.s.st!=="smoke"),cov=burn.filter(x=>x.s.st==="ok"||x.s.st==="near");
+  const pct=burn.length?Math.round(100*cov.length/burn.length):100;
+  const ceil=burn.map(x=>x.i.key==="nomex"||!FAM[x.i.key]?null:{c:ceiling(FAM[x.i.key]),it:x.i}).filter(x=>x&&x.c);
+  const weakest=ceil.length?ceil.reduce((a,b)=>b.c.o2<a.c.o2?b:a):null,head=weakest?weakest.c.o2-o2:null;
+  const bo=bandOf("o2_pct",o2),bu=bandOf("airflow_cms",u),bp=bandOf("pressure_psia",psia);
+  const lvl={reference:0,check_design:0,elevated:1,high:2,outside_reference:3}[bo.c]??1;
+  const over=o2>X.design.o2+X.band;
+  const R=[];let status;
+  if(g==="1g"){status="STANDBY";R.push({k:"1g",t:"Launch phase at 1 g or more: cabin materials are covered by NASA-STD-6001 ground tests. PrF-G's microgravity evidence applies from orbit insertion."})}
+  else{
+    if(lvl>=3||(over&&pct<50))status="LOW";else if(burn.length&&pct===0)status="UNVERIFIED";else if(pct<100||lvl>=2||(head!=null&&head<0)||bu.c==="sensitive")status="REDUCED";else status="NOMINAL";
+    if(over)R.push({k:"o2",t:`Oxygen is ${f1(o2-X.design.o2)} points above the ${X.design.o2}% design point.`});
+    const unc=burn.filter(x=>!(x.s.st==="ok"||x.s.st==="near"));
+    if(unc.length)R.push({k:"cov",t:`${unc.length} of ${burn.length} exposed burnable ${burn.length===1?"material has":"materials have"} no NASA test evidence here: ${unc.map(x=>x.i.label).join(", ")}.`});
+    if(head!=null&&head<0)R.push({k:"head",t:`Cabin oxygen is ${f1(-head)} points above the highest tested oxygen for ${weakest.it.label} (${f1(weakest.c.o2)}%).`});
+    if(bu.c==="sensitive")R.push({k:"u",t:`Airflow is ${f1(u)} cm/s, in the 0–5 cm/s range where BASS-II flames were most flow-sensitive.`});
+    if(g==="lunar")R.push({k:"g",t:"No partial-gravity fire data exists in NASA PSI; microgravity and 1 g act only as bounds."});
+    if(!R.length)R.push({k:"ok",t:"All exposed burnable materials have NASA test evidence at these conditions."});
+  }
+  return{status,pct,head,weakest,states,burn,cov,R,pm:states.find(x=>x.s.st==="ok"),bo,bu,bp,over,o2,psia,u,pk,g};
+}
+
+/* ================= mission model ================= */
+const PH=[
+ {id:"pad",name:"Pre-launch",real:120,demo:5,g:"1g",atm:"launch",chart:"ascent"},
+ {id:"ascent",name:"Ascent",real:510,demo:26,g:"1g",atm:"launch",chart:"ascent"},
+ {id:"leo",name:"Earth orbit",real:7200,demo:10,g:"micro",atm:"launch",chart:"ascent"},
+ {id:"tli",name:"Translunar coast",real:259200,demo:26,g:"micro",atm:"transit",chart:"coast"},
+ {id:"llo",name:"Lunar orbit & landing",real:86400,demo:10,g:"micro",atm:"transit",chart:"coast"},
+ {id:"surf",name:"Lunar surface",real:Infinity,demo:Infinity,g:"lunar",atm:"surface",chart:"cabin"}];
+let t0=-120;const starts=[];PH.forEach(p=>{starts.push(t0);t0+=p.real});
+const PRESETS={
+ lunar:{name:"Lunar surface mission (illustrative)",u:10,band:1,det:"inhibit",atm:{launch:{o2:20.9,psia:14.7},transit:{o2:26.5,psia:10.2},surface:{o2:34,psia:8.2}},inv:[
+   {label:"Nomex stowage bags",key:"nomex",exposed:true,stow:false},{label:"Silicone hatch seals",key:"silicone",exposed:true,stow:false},
+   {label:"Acrylic window cover",key:"pmma",exposed:true,stow:false,t:4,sides:"one"},{label:"Kapton wiring insulation",key:"kapton",exposed:true,stow:false},
+   {label:"Cotton crew clothing",key:"cotton_jersey",exposed:false,stow:true}]},
+ station:{name:"Orbital station crew rotation",u:10,band:1,det:"inhibit",atm:{launch:{o2:20.9,psia:14.7},transit:{o2:21,psia:14.5},surface:{o2:21,psia:14.5}},inv:[
+   {label:"Nomex stowage bags",key:"nomex",exposed:true,stow:false},{label:"Acrylic panel",key:"pmma",exposed:true,stow:false,t:4,sides:"one"},
+   {label:"Kapton wiring insulation",key:"kapton",exposed:true,stow:false},{label:"Cotton-fiberglass cloth bundle",key:"sibal",exposed:true,stow:true},
+   {label:"Cotton crew clothing",key:"cotton_jersey",exposed:false,stow:true}]}};
+let M;try{M=JSON.parse(localStorage.getItem("prfg-mission-v2")||"null")}catch(e){}
+if(!M||!M.atm)M=clone(PRESETS.lunar);
+const saveM=()=>{try{localStorage.setItem("prfg-mission-v2",JSON.stringify(M))}catch(e){}};
+
+/* trajectory (illustrative) */
+const sstep=x=>x<=0?0:x>=1?1:x*x*(3-2*x);
+function traj(met){
+  if(met<0)return{alt:0,vel:0,g:1,label:"Altitude",unit:"km"};
+  if(met<510){const x=met/510,alt=185*Math.pow(sstep(x),.75),vel=7.8*Math.pow(x,1.7);
+    let g=met<150?1.25+1.9*(met/150):met<156?0.9:1.0+2.0*((met-156)/354);return{alt,vel,g,label:"Altitude",unit:"km"}}
+  const leoEnd=starts[3];
+  if(met<leoEnd)return{alt:185,vel:7.8,g:0,label:"Altitude",unit:"km"};
+  const tliEnd=starts[4];
+  if(met<tliEnd){const y=(met-leoEnd)/(tliEnd-leoEnd),d=384400*(1-Math.exp(-3.2*y))/(1-Math.exp(-3.2));return{dist:d,vel:Math.max(0.9,10.8*Math.exp(-2.6*y)),g:0,label:"Distance from Earth",unit:"km"}}
+  const lloEnd=starts[5];
+  if(met<lloEnd){const y=(met-tliEnd)/(lloEnd-tliEnd);const alt=y<0.8?100:100*(1-sstep((y-0.8)/0.2));return{alt,vel:y<0.8?1.63:1.63*(1-sstep((y-0.8)/0.2)),g:y<0.8?0:0.3,label:"Altitude above the Moon",unit:"km",moon:true}}
+  return{alt:0,vel:0,g:0.166,label:"Surface",unit:"",surface:true};
+}
+
+/* ================= simulation state ================= */
+const S={};
+function rnd(){S.seed=(S.seed*16807)%2147483647;return(S.seed-1)/2147483646}
+function gauss(){return Math.sqrt(-2*Math.log(rnd()+1e-9))*Math.cos(2*Math.PI*rnd())}
+const phaseAt=met=>{let i=0;for(let k=0;k<PH.length;k++)if(met>=starts[k])i=k;return i};
+function reset(){
+  Object.assign(S,{met:-120,run:true,seed:11,speed:+$("speed").value||1,inv:clone(M.inv),o2:M.atm.launch.o2,psia:M.atm.launch.psia,u:M.u,temp:22.3,smoke:0.02,
+    drift:false,drifted:0,o2target:null,fanFail:false,fanFixed:false,dust:0,inhibited:false,decided:{},log:[],last:null,unack:null,surfT:null,
+    hist:[],asc:[],coast:[],cab:[],lastPhase:-1,cargoDone:false,chart:"ascent",chartAuto:true});
+  logAdd("info",`Mission configured: ${M.name}`);
+}
+function logAdd(type,text){S.log.unshift({met:S.met,type,text})}
+function fmtMET(m){const s=Math.abs(Math.round(m)),d=Math.floor(s/86400),h=Math.floor(s%86400/3600),mi=Math.floor(s%3600/60),se=s%60,p=n=>String(n).padStart(2,"0");return (m<0?"T−":"T+")+(d?d+"d ":"")+p(h)+":"+p(mi)+":"+p(se)}
+function design(){return M.atm[PH[phaseAt(S.met)].atm]}
+
+function step(dtReal){ // dtReal: seconds of wall time
+  const pi=phaseAt(S.met),p=PH[pi];
+  const rate=p.real===Infinity?60:p.real/p.demo;
+  const dm=dtReal*rate*S.speed,prev=S.met;S.met+=dm;
+  const ni=phaseAt(S.met);
+  if(ni!==S.lastPhase){if(S.lastPhase>=0)logAdd("info",`Phase: ${PH[ni].name}`);S.lastPhase=ni;if(S.chartAuto){S.chart=PH[ni].chart;syncTabs()}
+    if(PH[ni].id==="surf"){S.surfT=starts[5];logAdd("info","Crew transferred to the surface habitat")}}
+  // cabin atmosphere follows the phase design point (ramped), unless crew/drift override
+  const dz=design();
+  const target=S.o2target!=null?S.o2target:dz.o2;
+  if(S.drift)S.drifted=Math.min(4,S.drifted+0.22*dm/60);
+  const k=Math.min(1,dm/(PH[ni].id==="tli"?20000:600)),ko=S.o2target!=null?Math.min(1,dm/150):k;
+  S.o2+=(target+(S.drift?S.drifted:0)-S.o2)*ko;S.psia+=(dz.psia-S.psia)*k;
+  if(S.o2target!=null&&Math.abs(S.o2-S.o2target)<0.05){S.o2target=null;S.drift=false;S.drifted=0}
+  if(S.fanFail&&!S.fanFixed)S.u=Math.max(0.4,S.u-2.5*dm/60);else S.u+=(M.u-S.u)*Math.min(1,dm/120);
+  if(S.dust>0){S.dust-=dm;S.smoke=0.05+Math.abs(gauss())*0.08;if(S.dust<=0){S.inhibited=false;S.smoke=0.02;logAdd("info","Dust work ended: smoke detectors re-armed")}}
+  // scripted surface events (demo)
+  if(S.surfT!=null){const st=S.met-S.surfT;
+    if(st>=180&&!S.decided.autodrift&&!S.drift&&S.o2target==null){S.decided.autodrift=1;S.drift=true;logAdd("info","Event: O₂ supply valve drifting high")}
+    if(st>=720&&!S.cargoDone){injectCargo()}}
+  sample();
+}
+function sample(){
+  const tr=traj(S.met),now={o2:S.o2+gauss()*0.03,psia:S.psia+gauss()*0.006,u:Math.max(0,S.u+gauss()*0.22),temp:S.temp+gauss()*0.07};
+  S.now=now;S.tr=tr;
+  S.hist.push({met:S.met,...now,pp:now.o2/100*now.psia*KPA,g:tr.g,smoke:S.smoke});if(S.hist.length>90)S.hist.shift();
+  if(S.met>=0&&S.met<=600)S.asc.push([S.met,tr.alt,tr.vel,tr.g]);
+  if(tr.dist!=null)S.coast.push([S.met,tr.dist,tr.vel]);
+  if(S.surfT!=null)S.cab.push([S.met,now.o2]);if(S.cab.length>400)S.cab.shift();
+  const pz=PH[phaseAt(S.met)];
+  S.E=evaluate({inv:S.inv,now,design:design(),g:pz.g,band:M.band});
+  if(S.cab.length)S.cab[S.cab.length-1].push(S.E.pct);
+  alertCheck();
+}
+function alertCheck(){
+  const E=S.E,st=ST[E.status];
+  if(E.status!==S.last){
+    if(S.last!==null){const up=ORDER.indexOf(E.status)>ORDER.indexOf(S.last);
+      const msg=`Fire margin ${E.status==="NOMINAL"?"nominal":E.status.toLowerCase()}. ${E.R[0].t}`;
+      if(st.alert&&up){logAdd(st.alert.toLowerCase(),msg);S.unack={status:E.status};say(`${st.alert==="CAUTION"?"Caution":"Advisory"}. ${msg}`);
+        $("capsule").classList.remove("alert");void $("capsule").offsetWidth;$("capsule").classList.add("alert")}
+      else{logAdd("info",msg);if(!st.alert)S.unack=null}}
+    S.last=E.status}
+}
+
+/* events */
+function injectCargo(){const c=S.inv.find(i=>i.stow&&!i.exposed);S.cargoDone=true;if(c){c.exposed=true;logAdd("info",`Event: cargo unpacked, ${c.label} now exposed`)}}
+const EV={drift:()=>{if(!S.drift){S.drift=true;S.o2target=null;logAdd("info","Event: O₂ supply valve drifting high")}},cargo:injectCargo,
+  dust:()=>{S.dust=900;if(M.det==="inhibit"){S.inhibited=true;logAdd("info","Event: dust-generating work started, smoke detectors inhibited")}else logAdd("info","Event: dust-generating work started")},
+  fan:()=>{S.fanFail=true;S.fanFixed=false;logAdd("info","Event: cabin fan stopped")}};
+document.querySelectorAll("[data-ev]").forEach(b=>b.onclick=()=>{EV[b.dataset.ev]();sample();renderAll()});
+
+/* ================= voice ================= */
+let VOICE=false;function say(t){if(!VOICE)return;try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.rate=1.03;speechSynthesis.speak(u)}catch(e){}}
+$("voice").onclick=()=>{VOICE=!VOICE;$("voice").textContent=VOICE?"Voice alerts on":"Voice alerts off";$("voice").setAttribute("aria-pressed",VOICE);if(VOICE)say("PrF-G voice alerts on.")};
+
+/* ================= rendering: console ================= */
+function syncTabs(){document.querySelectorAll(".ctabs button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.c===S.chart));$("ctitle").textContent={ascent:"Ascent profile",coast:"Translunar trajectory",cabin:"Habitat cabin oxygen"}[S.chart]}
+document.querySelectorAll(".ctabs button").forEach(b=>b.onclick=()=>{S.chart=b.dataset.c;S.chartAuto=false;syncTabs();drawChart()});
+function renderRail(){const pi=phaseAt(S.met);
+  $("rail").innerHTML=PH.map((p,i)=>{const a=M.atm[p.atm];return`<div class="ph ${i<pi?"done":i===pi?"now":""}"><span class="dot"></span><div><b>${p.name}</b><small>${i===0?"T−2 min":fmtMET(starts[i]).replace(/:\d\d$/,"")}</small><div class="atm">${p.g==="1g"?"1 g":p.g==="micro"?"µg":"0.166 g"} · ${f1(a.o2)}% O₂ · ${f1(a.psia)} psia</div></div></div>`}).join("")}
+function spark(vals,col,ref){const W=200,H=30;if(vals.length<2)return`<svg viewBox="0 0 ${W} ${H}"></svg>`;let mn=Math.min(...vals,...(ref??[])),mx=Math.max(...vals,...(ref??[]));if(mx-mn<1e-6){mx+=.5;mn-=.5}const pd=(mx-mn)*.2;mn-=pd;mx+=pd;
+  const X=i=>i/(vals.length-1)*W,Y=v=>H-2-(v-mn)/(mx-mn)*(H-4);const d=vals.map((v,i)=>(i?"L":"M")+X(i).toFixed(1)+" "+Y(v).toFixed(1)).join("");
+  const rl=(ref??[]).map(v=>`<line x1="0" x2="${W}" y1="${Y(v).toFixed(1)}" y2="${Y(v).toFixed(1)}" stroke="var(--warn)" stroke-dasharray="3 3" stroke-width="1" vector-effect="non-scaling-stroke"/>`).join("");
+  return`<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true">${rl}<path d="${d} L${W} ${H} L0 ${H}Z" fill="${col}" opacity=".1"/><path d="${d}" fill="none" stroke="${col}" stroke-width="1.6" vector-effect="non-scaling-stroke"/></svg>`}
+function renderConsole(){
+  const pi=phaseAt(S.met),p=PH[pi],tr=S.tr,dz=design();
+  $("met").textContent=fmtMET(S.met);$("phase").textContent=p.name;$("mname").textContent=M.name;
+  renderRail();
+  if(tr.dist!=null){$("v1l").textContent="Distance from Earth";$("v1").innerHTML=`${Math.round(tr.dist).toLocaleString("en-US")}<small>km</small>`}
+  else{$("v1l").textContent=tr.surface?"Location":tr.moon?"Altitude above the Moon":"Altitude";$("v1").innerHTML=tr.surface?`Surface<small>habitat</small>`:`${f1(tr.alt)}<small>km</small>`}
+  $("v2").innerHTML=`${f2(tr.vel)}<small>km/s</small>`;$("v3").innerHTML=`${tr.g>0&&tr.g<1?f2(tr.g):f1(tr.g)}<small>g</small>`;$("gbar").style.width=Math.min(100,tr.g/4*100)+"%";
+  $("v4").textContent=p.g==="1g"?(S.met>=0?"Launch loads":"1 g on the pad"):p.g==="micro"?"Microgravity":"Lunar · 0.166 g";
+  $("v5").innerHTML=`${f1(dz.o2)}% O₂ · ${f1(dz.psia)} psia<br><span class="note">caution above ${f1(dz.o2+M.band)}% O₂</span>`;
+  const H=S.hist,last=H[H.length-1],col="var(--traj)";
+  const card=(id,n,k,un,d,ref)=>{$(id).innerHTML=`<div class="row"><span class="lab">${n}</span><span class="v">${(+last[k]).toFixed(d)}<small>${un}</small></span></div>${spark(H.map(h=>h[k]),col,ref)}`};
+  card("t-o2","O₂","o2","%",1,[dz.o2+M.band]);card("t-p","Pressure","psia","psia",2);card("t-pp","ppO₂","pp","kPa",1);card("t-u","Airflow","u","cm/s",1,[5]);card("t-temp","Cabin temp","temp","°C",1);
+  $("t-smoke").innerHTML=`<div class="row"><span class="lab">Smoke det.</span><span class="pill ${S.inhibited?"s-warn":"s-ok"}">${S.inhibited?"Inhibited":"Armed"}</span></div><div class="row" style="margin-top:6px"><span class="note">obscuration</span><span class="v" style="font-size:17px">${f2(S.smoke)}<small>%/m</small></span></div>`;
+  const E=S.E,st=ST[E.status];
+  $("capsule").style.setProperty("--sc",st.c);$("cap-s").textContent=E.status;
+  $("cap-r").textContent=(st.alert?st.alert+" · ":"")+(E.R[0].t.length>92?E.R[0].t.slice(0,90)+"…":E.R[0].t);
+  drawChart();
+}
+
+/* chart (canvas) */
+function drawChart(){
+  const cv=$("chart"),box=cv.parentElement,dpr=window.devicePixelRatio||1,W=box.clientWidth,H=box.clientHeight;if(!W||!H)return;
+  if(cv.width!==Math.round(W*dpr)||cv.height!==Math.round(H*dpr)){cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr)}
+  const c=cv.getContext("2d");c.setTransform(dpr,0,0,dpr,0,0);c.clearRect(0,0,W,H);
+  const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+  const L=54,R=58,T=14,B=30,pw=W-L-R,ph=H-T-B;
+  c.font="12px "+css("--f-mono");c.textBaseline="middle";
+  const grid=(xt,yl,yr)=>{c.strokeStyle=css("--line");c.lineWidth=1;c.fillStyle=css("--muted");
+    xt.forEach(([v,lab])=>{const x=L+v*pw;c.beginPath();c.moveTo(x,T);c.lineTo(x,T+ph);c.stroke();c.textAlign="center";c.fillText(lab,x,T+ph+16)});
+    yl.forEach(([v,lab])=>{const y=T+ph-v*ph;c.beginPath();c.moveTo(L,y);c.lineTo(L+pw,y);c.stroke();c.textAlign="right";c.fillText(lab,L-8,y)});
+    (yr||[]).forEach(([v,lab])=>{const y=T+ph-v*ph;c.textAlign="left";c.fillText(lab,L+pw+8,y)})};
+  const line=(pts,col,w,dash)=>{if(pts.length<2)return;c.strokeStyle=col;c.lineWidth=w;c.setLineDash(dash||[]);c.beginPath();pts.forEach(([x,y],i)=>i?c.lineTo(L+x*pw,T+ph-y*ph):c.moveTo(L+x*pw,T+ph-y*ph));c.stroke();c.setLineDash([])};
+  const area=(pts,col)=>{if(pts.length<2)return;c.fillStyle=col;c.beginPath();c.moveTo(L+pts[0][0]*pw,T+ph);pts.forEach(([x,y])=>c.lineTo(L+x*pw,T+ph-y*ph));c.lineTo(L+pts[pts.length-1][0]*pw,T+ph);c.closePath();c.fill()};
+  const dot=(x,y,col)=>{c.fillStyle=col;c.beginPath();c.arc(L+x*pw,T+ph-y*ph,4.5,0,7);c.fill();c.strokeStyle=css("--bg");c.lineWidth=2;c.stroke()};
+  const marker=(x,lab)=>{c.strokeStyle=css("--line-2");c.setLineDash([2,4]);c.beginPath();c.moveTo(L+x*pw,T);c.lineTo(L+x*pw,T+ph);c.stroke();c.setLineDash([]);c.save();c.fillStyle=css("--ink-2");c.font="11px "+css("--f-body");c.textAlign="left";c.fillText(lab,L+x*pw+4,T+10);c.restore()};
+  const tc=css("--traj"),tc2=css("--traj-2");
+  let leg="";
+  if(S.chart==="ascent"){const tm=600,am=200,vm=8;
+    grid([0,120,240,360,480,600].map(s=>[s/tm,`${s/60|0}:00`]),[0,50,100,150,200].map(a=>[a/am,a+" km"]),[0,2,4,6,8].map(v=>[v/vm,v+" km/s"]));
+    [[70,"Max-Q"],[150,"Staging"],[510,"Engine cutoff"]].forEach(([s,l])=>marker(s/tm,l));
+    const plan=[];for(let s=0;s<=600;s+=6){const t=traj(Math.min(s,509.9));plan.push([s/tm,(s<=510?t.alt:185)/am,(s<=510?t.vel:7.8)/vm])}
+    line(plan.map(p=>[p[0],p[1]]),tc+"55",1.2,[4,4]);line(plan.map(p=>[p[0],p[2]]),tc2+"55",1.2,[4,4]);
+    const fl=S.asc.map(a=>[Math.min(a[0],600)/tm,a[1]/am,a[2]/vm]);
+    area(fl.map(p=>[p[0],p[1]]),tc+"22");line(fl.map(p=>[p[0],p[1]]),tc,2.2);line(fl.map(p=>[p[0],p[2]]),tc2,2.2);
+    if(fl.length&&S.met<=600){const l=fl[fl.length-1];dot(l[0],l[1],tc);dot(l[0],l[2],tc2)}
+    leg=`<span><i style="background:${tc}"></i>Altitude (km, left)</span><span><i style="background:${tc2}"></i>Velocity (km/s, right)</span><span><i style="background:${tc}55"></i>Planned</span><span class="note">Time since liftoff (min). Illustrative profile.</span>`}
+  else if(S.chart==="coast"){const t0=starts[3],t1=starts[5],span=t1-t0,dm=400000,vm=12;
+    grid([0,1,2,3,4].map(d=>[d*86400/span,`day ${d}`]),[0,100,200,300,400].map(k=>[k*1000/dm,k+"k km"]),[0,4,8,12].map(v=>[v/vm,v+" km/s"]));
+    marker((starts[4]-t0)/span,"Lunar orbit");
+    const plan=[];for(let s=t0;s<=starts[4];s+=span/120){const t=traj(s);plan.push([(s-t0)/span,t.dist/dm,t.vel/vm])}
+    line(plan.map(p=>[p[0],p[1]]),tc+"55",1.2,[4,4]);
+    c.strokeStyle=css("--ink-2")+"66";c.setLineDash([6,6]);const ym=T+ph-384400/dm*ph;c.beginPath();c.moveTo(L,ym);c.lineTo(L+pw,ym);c.stroke();c.setLineDash([]);c.fillStyle=css("--ink-2");c.textAlign="left";c.fillText("Moon 384,400 km",L+6,ym-10);
+    const fl=S.coast.map(a=>[(a[0]-t0)/span,a[1]/dm,a[2]/vm]);area(fl.map(p=>[p[0],p[1]]),tc+"22");line(fl.map(p=>[p[0],p[1]]),tc,2.2);line(fl.map(p=>[p[0],p[2]]),tc2,2.2);
+    if(fl.length&&S.met<starts[4]){const l=fl[fl.length-1];dot(l[0],l[1],tc);dot(l[0],l[2],tc2)}
+    leg=`<span><i style="background:${tc}"></i>Distance from Earth (left)</span><span><i style="background:${tc2}"></i>Speed relative to Earth (right)</span><span class="note">Illustrative free-return-style coast.</span>`}
+  else{const pts=S.cab;const dz=M.atm.surface;const lo=Math.min(20,dz.o2-6),hi=Math.max(40,dz.o2+6),sp=hi-lo;
+    const tA=pts.length?pts[0][0]:starts[5],tB=Math.max(pts.length?pts[pts.length-1][0]:tA,tA+3600),ts=tB-tA;
+    const ticks=[];for(let k=0;k<=4;k++){const s=tA+ts*k/4;ticks.push([k/4,fmtMET(s).replace(/^T\+/,"").replace(/:\d\d$/,"")])}
+    const yl=[];for(let v=Math.ceil(lo/5)*5;v<=hi;v+=5)yl.push([(v-lo)/sp,v+"%"]);
+    grid(ticks,yl,[0,50,100].map(v=>[v/100,v+"%"]));
+    if(!pts.length){c.fillStyle=css("--muted");c.textAlign="center";c.fillText("Habitat cabin data starts when the crew enters the surface habitat",L+pw/2,T+ph/2)}
+    const yd=(dz.o2-lo)/sp,yc=(dz.o2+M.band-lo)/sp;
+    c.fillStyle=css("--warn")+"14";c.fillRect(L,T,pw,(1-yc)*ph);
+    line([[0,yd],[1,yd]],css("--ink-2")+"88",1,[6,5]);line([[0,yc],[1,yc]],css("--warn"),1.2,[4,4]);
+    c.fillStyle=css("--ink-2");c.textAlign="left";c.fillText(`design ${f1(dz.o2)}%`,L+6,T+ph-yd*ph+10);c.fillStyle=css("--warn");c.fillText(`caution ${f1(dz.o2+M.band)}%`,L+6,T+ph-yc*ph-10);
+    const fl=pts.map(p=>[(p[0]-tA)/ts,(p[1]-lo)/sp,(p[2]??0)/100]);
+    line(fl.map(p=>[p[0],p[2]]),css("--unk"),1.6,[2,3]);area(fl.map(p=>[p[0],p[1]]),tc+"1c");line(fl.map(p=>[p[0],p[1]]),tc,2.2);
+    if(fl.length){const l=fl[fl.length-1];dot(l[0],l[1],tc)}
+    leg=`<span><i style="background:${tc}"></i>Cabin O₂ (left)</span><span><i style="background:${css("--warn")}"></i>Caution line</span><span><i style="background:${css("--unk")}"></i>PrF-G evidence coverage (right)</span>`}
+  $("legend").innerHTML=leg;
+}
+window.addEventListener("resize",drawChart);
+
+/* ================= rendering: PrF-G dashboard ================= */
+function slope(){const a=S.hist.slice(-10);if(a.length<5)return 0;const k=a.length,mx=a.reduce((s,h)=>s+h.met,0)/k,my=a.reduce((s,h)=>s+h.o2,0)/k;let n=0,d=0;a.forEach(h=>{n+=(h.met-mx)*(h.o2-my);d+=(h.met-mx)**2});return d?n/d*60:0}
+function projection(E){if(E.g==="1g")return{a:"·",t:"Projection starts in orbit",s:"No margin screening during launch loads."};
+  const sl=slope(),lim=design().o2+M.band;
+  if(Math.abs(sl)<0.03)return{a:"→",t:"O₂ stable",s:"No status change projected from the current trend."};
+  if(sl>0&&E.o2<lim)return{a:"↗",t:`O₂ +${f2(sl)} pts/min → caution line in ~${Math.max(1,Math.round((lim-E.o2)/sl))} min`,s:`Caution at ${f1(lim)}% (design + ${M.band}). Fitted to the last readings.`};
+  if(sl>0)return{a:"↗",t:`O₂ +${f2(sl)} pts/min, above the caution line`,s:`Caution line ${f1(lim)}%.`};
+  return{a:"↘",t:`O₂ ${f2(sl)} pts/min, falling`,s:E.over?`Back under ${f1(lim)}% in ~${Math.max(1,Math.round((E.o2-lim)/-sl))} min if the trend holds.`:"Fitted to the last readings."}}
+function options(E){const out=[];if(E.g==="1g")return out;const dz=design();
+  const what=(fn)=>{const T={inv:clone(S.inv),now:{...S.now},design:dz,g:E.g,band:M.band};fn(T);return evaluate(T)};
+  if(E.over&&S.o2target==null)out.push({id:"o2"+Math.round(S.met/600),t:`Return O₂ to the ${f1(dz.o2)}% design point`,e:"Under the vehicle's approved procedure, with Mission Control. PrF-G does not change the atmosphere.",step:"Checklist: margin critical · step c4",proj:what(T=>{T.now.o2=dz.o2}),act:()=>{S.o2target=dz.o2;S.drift=false;S.drifted=0}});
+  S.inv.forEach((it,ix)=>{if(!it.exposed||!it.stow)return;const s=E.states.find(x=>x.i===it);if(!s||["ok","near","smoke"].includes(s.s.st))return;
+    out.push({id:"stow"+ix,t:`Stow ${it.label}`,e:`${s.s.lab}: ${s.s.txt}. Stowing removes it from the exposed inventory.`,step:"Checklist: untested conditions · step u4",proj:what(T=>{T.inv[ix].exposed=false}),act:()=>{it.exposed=false}})});
+  if(E.u<5&&S.fanFail&&!S.fanFixed)out.push({id:"fan",t:`Restore ventilation to ${M.u} cm/s`,e:"Airflow under 5 cm/s is where BASS-II flames were most flow-sensitive. Less airflow is not automatically safer.",step:"Checklist: margin reduced · step t7",proj:what(T=>{T.now.u=M.u}),act:()=>{S.fanFixed=true;S.fanFail=false}});
+  return out.filter(o=>!S.decided[o.id])}
+function renderDash(){
+  if($("dash").hidden)return;
+  const E=S.E,st=ST[E.status];$("d-met").textContent=fmtMET(S.met)+" · "+PH[phaseAt(S.met)].name;
+  $("band").style.setProperty("--sc",st.c);$("b-word").textContent=E.status;
+  $("b-reason").innerHTML=esc(E.R[0].t)+(E.R.length>1?`<small>${E.R.slice(1).map(r=>esc(r.t)).join(" ")}</small>`:"");
+  const ch=[st.alert?`<span class="pill ${st.p}">${st.alert}</span>`:`<span class="pill s-mute">No alert</span>`];if(S.inhibited)ch.push(`<span class="pill s-warn">Smoke detection inhibited · PrF-G screening on</span>`);
+  $("b-chips").innerHTML=ch.join("");$("ack").hidden=!S.unack;
+  const tl=[["Evidence coverage",E.g==="1g"?"—":E.pct+"%",E.g==="1g"?"screening starts in orbit":`${E.cov.length} of ${E.burn.length} burnable materials`],
+    ["O₂ headroom",E.head==null||E.g==="1g"?"—":(E.head>=0?"+":"")+f1(E.head),E.weakest&&E.g!=="1g"?`pts vs ${f1(E.weakest.c.o2)}% (${E.weakest.it.label})`:"no tested O₂ for these materials"],
+    ["PMMA spread",E.pm?E.pm.s.v.toFixed(3):"—",E.pm?`mm/s · GP · ×${GP.err.toFixed(2)} typical`:"only inside the model's tested range"]];
+  $("tiles").innerHTML=tl.map(x=>`<div class="tile"><div class="lab">${x[0]}</div><div class="v">${x[1]}</div><div class="s">${esc(x[2])}</div></div>`).join("");
+  const pr=projection(E);$("trend").innerHTML=`<span class="a">${pr.a}</span><div><b>${esc(pr.t)}</b><div class="note">${esc(pr.s)} Projection, not a measurement.</div></div>`;
+  const pc={reference:"s-ok",check_design:"s-acc",elevated:"s-warn",high:"s-bad",outside_reference:"s-bad",sensitive:"s-warn",assess_per_material:"s-acc"};
+  $("screen").innerHTML=[[E.bo,`O₂ ${f1(E.o2)}%`],[E.bp,`${f2(E.psia)} psia`],[E.bu,`${f1(E.u)} cm/s`]].map(([b,l])=>`<span class="pill ${pc[b.c]||"s-mute"}" title="${esc(b.i)}">${esc(l)} · ${esc(b.i)}</span>`).join("");
+  const ex=S.inv.filter(i=>i.exposed).length;$("mcount").textContent=`${ex} exposed · ${S.inv.length-ex} stowed`;
+  const lp={ok:"s-ok",near:"s-ok",unk:"s-unk",smoke:"s-warn"};
+  $("mats").innerHTML=S.inv.map(it=>{if(!it.exposed)return`<div class="mat"><div class="t"><b>${esc(it.label)}</b><span class="pill s-mute">Stowed</span></div></div>`;
+    const s=E.states.find(x=>x.i===it).s;return`<div class="mat"><div class="t"><b>${esc(it.label)}</b><span class="pill ${E.g==="1g"?"s-stby":lp[s.st]}">${E.g==="1g"?"Ground-certified":esc(s.lab)}</span></div><span class="note">${esc(MAT(it.key)?.name||it.key)} · ${esc(s.txt)}</span><details><summary>Why this?</summary><div class="why">${esc(s.why)}${s.runs.length?` <span class="mono">Runs: ${s.runs.slice(0,3).map(esc).join(", ")}</span>`:""}</div></details></div>`}).join("");
+  const ops=options(E);
+  $("opts").innerHTML=ops.length?ops.map(o=>`<div class="opt"><div class="t">${esc(o.t)}</div><div class="e">${esc(o.e)}</div><div class="chips" style="align-items:center"><span class="note">If approved:</span><span class="pill ${st.p}">${E.status}</span><span>→</span><span class="pill ${ST[o.proj.status].p}">${o.proj.status}</span><span class="note">coverage ${E.pct}% → ${o.proj.pct}%</span></div><div class="note">${esc(o.step)} (simulated checklist)</div><div class="acts"><button class="btn primary" data-ok="${o.id}">Approve</button><button class="btn" data-no="${o.id}">Decline</button></div></div>`).join("")
+    :`<p class="note">${E.g==="1g"?"No options during launch. PrF-G starts proposing options once in orbit.":"No options right now. PrF-G keeps screening and proposes options when conditions change."}</p>`;
+  ops.forEach(o=>{$("opts").querySelector(`[data-ok="${o.id}"]`).onclick=()=>{o.act();S.decided[o.id]=1;logAdd("crew","Approved: "+o.t);sample();renderAll()};
+    $("opts").querySelector(`[data-no="${o.id}"]`).onclick=()=>{S.decided[o.id]=1;logAdd("declined","Declined: "+o.t);renderAll()}});
+  const TG={caution:["Caution","s-bad"],advisory:["Advisory","s-warn"],info:["Event","s-mute"],crew:["Crew","s-acc"],declined:["Declined","s-mute"],ack:["Ack","s-acc"]};
+  $("log").innerHTML=S.log.slice(0,60).map(l=>`<div class="row"><span class="tag ${TG[l.type][1]}">${TG[l.type][0]}</span><span>${esc(l.text)}</span><span class="mono note">${fmtMET(l.met).replace(/^T[+−]/,"")}</span></div>`).join("");
+  renderNN(E);
+}
+$("ack").onclick=()=>{if(S.unack){logAdd("ack",`Acknowledged ${S.unack.status.toLowerCase()} alert`);S.unack=null;renderAll()}};
+function openDash(){$("dash").hidden=false;renderDash();$("close").focus()}
+function closeDash(){$("dash").hidden=true;$("capsule").focus()}
+$("capsule").onclick=openDash;$("close").onclick=closeDash;
+$("dash").addEventListener("click",e=>{if(e.target===$("dash"))closeDash()});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("dash").hidden)closeDash()});
+
+/* AI window */
+const Q=[["why","Why this status?"],["tested","Is this tested?"],["ceiling","How far does the evidence go?"],["options","What can we do?"]];
+$("qchips").innerHTML=Q.map(q=>`<button type="button" data-q="${q[0]}">${q[1]}</button>`).join("");
+$("qchips").querySelectorAll("button").forEach(b=>b.onclick=()=>answer(b.dataset.q));
+$("askform").addEventListener("submit",e=>{e.preventDefault();const t=$("askq").value.toLowerCase();
+  answer(/why|drop|chang|happen|reason/.test(t)?"why":/far|high|max|limit|ceiling|raise/.test(t)?"ceiling":/test|evidence|trust|sure|data/.test(t)?"tested":/do|option|action|suggest|fix|should/.test(t)?"options":null)});
+function answer(k){const E=S.E;let h,c=[];
+  if(k==="why"){h=`Status ${E.status}. `+E.R.map(r=>r.t).join(" ");E.states.forEach(x=>c.push(...x.s.runs.slice(0,1)))}
+  else if(k==="tested"){h=E.g==="1g"?"During launch the cabin materials are covered by 1 g ground certification (NASA-STD-6001); PrF-G's microgravity evidence applies from orbit.":`${E.pct}% of exposed burnable materials have NASA test evidence here. `+E.states.map(x=>`${x.i.label}: ${x.s.lab.toLowerCase()}.`).join(" ");E.states.forEach(x=>c.push(...x.s.runs.slice(0,1)))}
+  else if(k==="ceiling"){h="I do not give an oxygen setting; cabin limits come from approved procedures. How far the NASA evidence goes: "+E.burn.map(x=>{const f=FAM[x.i.key],cc=f?ceiling(f):null;if(cc)c.push(rid(cc));return cc?`${x.i.label} ${f1(cc.o2)}% O₂ (${cc.inv} ${cc.id})`:`${x.i.label}: no run with transcribed O₂`}).join("; ")+`. Cabin O₂ now ${f1(E.o2)}%.`}
+  else if(k==="options"){const o=options(E);h=o.length?"Options for the crew, none applied until approved: "+o.map(x=>`${x.t} (status would be ${x.proj.status.toLowerCase()})`).join("; ")+".":"No options right now; the margin is screened continuously."}
+  else h="I can answer why the status is what it is, whether these conditions are tested, how far the evidence goes in oxygen, and what the crew can do.";
+  c=[...new Set(c)].filter(Boolean);$("answer").innerHTML=esc(h)+(c.length?`<div class="cite">Cited runs: ${c.map(esc).join(", ")}</div>`:"")+`<div class="note" style="margin-top:6px">Margin indicator, not an alarm. Any action needs crew approval.</div>`}
+let MLP=null;window.PrFG={connectMLP(fn){MLP=typeof fn==="function"?fn:null;renderDash()},state:()=>S.E,mission:()=>M};
+function renderNN(E){const head=`<div class="row"><span>Model</span><span class="pill ${MLP?"s-acc":"s-mute"}">${MLP?"MLP connected":"Not connected yet"}</span></div>`;
+  const pm=E.states.find(x=>x.i.key==="pmma"&&x.i.t);
+  if(!pm){$("nn").innerHTML=head+`<p class="note" style="margin:6px 0 0">Trained on flat PMMA only; no PMMA item is exposed.</p>`;return}
+  const te=pm.i.sides==="two"?pm.i.t/2:pm.i.t,w=E.g==="micro"?inDomain(te,E.o2,E.u,E.pk):["gravity"];
+  if(w.length){$("nn").innerHTML=head+`<div class="row"><span>${esc(pm.i.label)}</span><span class="pill s-unk">Not trained here</span></div><p class="note" style="margin:6px 0 0">Outside the 39 BASS-II training segments (${esc(w.join(", "))}). The network gives no number here.</p>`;return}
+  const gp=Math.exp(gpPredict(te,E.o2).mu);let nn=null;try{if(MLP)nn=Math.exp(MLP(Math.log(te),E.o2,E.u))}catch(e){}
+  $("nn").innerHTML=head+`<div class="row"><span>Main model (GP)</span><span class="mono">${gp.toFixed(3)} mm/s</span></div><div class="row"><span>Neural network</span><span class="mono">${nn!=null?nn.toFixed(3)+" mm/s":"—"}</span></div><p class="note" style="margin:6px 0 0">Same 39 NASA segments, validated by holding out whole tests (both about ×1.25). For comparison only.</p>`}
+
+/* ================= configuration (before launch) ================= */
+const ATMROWS=[["launch","Launch & Earth orbit","1 g → µg"],["transit","Transit & lunar orbit","µg"],["surface","Lunar surface habitat","0.166 g"]];
+function cfgFill(){
+  $("presets").innerHTML=Object.entries(PRESETS).map(([k,p])=>`<button class="btn small" type="button" data-p="${k}">${esc(p.name)}</button>`).join("");
+  $("presets").querySelectorAll("button").forEach(b=>b.onclick=()=>{M=clone(PRESETS[b.dataset.p]);saveM();cfgFill()});
+  $("c-name").value=M.name;$("c-u").value=M.u;$("c-band").value=M.band;$("c-det").value=M.det;
+  $("atmbody").innerHTML=ATMROWS.map(([k,n,g])=>`<tr><td>${n}</td><td><input type="number" min="15" max="45" step="0.1" data-a="${k}" data-f="o2" value="${M.atm[k].o2}" aria-label="${n} O2"></td><td><input type="number" min="4" max="15" step="0.1" data-a="${k}" data-f="psia" value="${M.atm[k].psia}" aria-label="${n} pressure"></td><td class="note">${g}</td></tr>`).join("");
+  $("atmbody").querySelectorAll("input").forEach(el=>el.addEventListener("input",()=>{M.atm[el.dataset.a][el.dataset.f]=+el.value;saveM();preflight()}));
+  const groups={A:"Burned in microgravity",B:"Smoke tests only",C:"Used on spacecraft, untested"};
+  $("addmat").innerHTML=Object.entries(groups).map(([k,g])=>`<optgroup label="${g}">`+D.mats.filter(m=>m.cat===k).map(m=>`<option value="${m.key}">${esc(m.name)}</option>`).join("")+"</optgroup>").join("");
+  renderInv();preflight();
+}
+["c-name","c-u","c-band","c-det"].forEach(id=>$(id).addEventListener("input",()=>{M.name=$("c-name").value||"Untitled mission";M.u=+$("c-u").value||0;M.band=+$("c-band").value||1;M.det=$("c-det").value;saveM();preflight()}));
+function renderInv(){const opts=k=>D.mats.map(m=>`<option value="${m.key}"${m.key===k?" selected":""}>${esc(m.name)}</option>`).join("");
+  $("invbody").innerHTML=M.inv.map((it,ix)=>`<tr><td><input type="text" data-i="${ix}" data-f="label" value="${esc(it.label)}" aria-label="Item name" style="min-width:110px"></td><td><select data-i="${ix}" data-f="key" aria-label="Material" style="min-width:120px">${opts(it.key)}</select></td>
+    <td><input type="checkbox" data-i="${ix}" data-f="exposed"${it.exposed?" checked":""} aria-label="Exposed at start"></td><td><input type="checkbox" data-i="${ix}" data-f="stow"${it.stow?" checked":""} aria-label="Stowable"></td>
+    <td>${it.key==="pmma"?`<input type="number" min="0.5" max="50" step="0.5" data-i="${ix}" data-f="t" value="${it.t||4}" aria-label="Thickness mm" style="width:64px">`:'<span class="note">—</span>'}</td><td><button class="btn small" type="button" data-rm="${ix}">Remove</button></td></tr>`).join("");
+  $("invbody").querySelectorAll("[data-f]").forEach(el=>el.addEventListener("input",()=>{const it=M.inv[+el.dataset.i],f=el.dataset.f;
+    if(f==="exposed"||f==="stow")it[f]=el.checked;else if(f==="t")it.t=+el.value;else it[f]=el.value;if(f==="key"){if(it.key==="pmma"){it.t=it.t||4;it.sides="one"}renderInv()}saveM();preflight()}));
+  $("invbody").querySelectorAll("[data-rm]").forEach(b=>b.onclick=()=>{M.inv.splice(+b.dataset.rm,1);saveM();renderInv();preflight()})}
+$("addbtn").onclick=()=>{const k=$("addmat").value,m=MAT(k);M.inv.push({label:m.name,key:k,exposed:true,stow:true,...(k==="pmma"?{t:4,sides:"one"}:{})});saveM();renderInv();preflight()};
+function preflight(){
+  const rows=[["Earth orbit",M.atm.launch,"micro"],["Transit",M.atm.transit,"micro"],["Lunar surface",M.atm.surface,"lunar"]];
+  $("pf").innerHTML=rows.map(([n,a,g])=>{const E=evaluate({inv:M.inv.map(i=>({...i,exposed:true})),now:{o2:a.o2,psia:a.psia,u:M.u},design:a,g,band:M.band});
+    return`<div class="tile" style="border-left:4px solid ${ST[E.status].c}"><div class="lab">${n} · ${f1(a.o2)}% O₂ · ${f1(a.psia)} psia</div><div class="v" style="color:${ST[E.status].c}">${E.status}</div><div class="s">${E.cov.length} of ${E.burn.length} burnable materials have NASA evidence</div></div>`}).join("")}
+function openCfg(running){$("cfg").hidden=false;$("cfgcancel").hidden=!running;$("golaunch").textContent=running?"Restart mission with these settings":"Go for launch";if(running)S.run=false;cfgFill()}
+$("cfgbtn").onclick=()=>openCfg(true);
+$("cfgcancel").onclick=()=>{$("cfg").hidden=true;S.run=true;$("play").textContent="Pause"};
+$("golaunch").onclick=()=>{$("cfg").hidden=true;reset();sample();renderAll();S.run=true;$("play").textContent="Pause"};
+
+/* ================= controls + loop ================= */
+$("jump").innerHTML=`<option value="">Jump to phase…</option>`+PH.map((p,i)=>`<option value="${i}">${p.name}</option>`).join("");
+$("jump").onchange=()=>{const i=+$("jump").value;if($("jump").value==="")return;
+  while(phaseAt(S.met)<i){const pi=phaseAt(S.met);const target=starts[pi+1]+1;const before=S.met;step(Math.max(.05,(target-S.met)/((PH[pi].real===Infinity?60:PH[pi].real/PH[pi].demo)*S.speed)));if(S.met===before)break}
+  $("jump").value="";renderAll()};
+$("play").onclick=()=>{S.run=!S.run;$("play").textContent=S.run?"Pause":"Play"};
+$("speed").onchange=()=>{S.speed=+$("speed").value};
+function renderAll(){renderConsole();renderDash()}
+reset();sample();syncTabs();renderAll();
+let lastT=performance.now(),acc=0;
+function loop(t){const dt=Math.min(.25,(t-lastT)/1000);lastT=t;
+  if(S.run&&$("cfg").hidden){acc+=dt;if(acc>=0.2){step(acc);acc=0;renderAll()}}
+  requestAnimationFrame(loop)}
+requestAnimationFrame(loop);
+openCfg(false);
+</script>
