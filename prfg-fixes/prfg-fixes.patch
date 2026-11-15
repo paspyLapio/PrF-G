@@ -1,0 +1,121 @@
+diff -ruN -x '*.pyc' -x __pycache__ orig/PrF-G-main/api/app/mlp_overlay.py PrF-G-main/api/app/mlp_overlay.py
+--- orig/PrF-G-main/api/app/mlp_overlay.py	2026-11-15 07:37:45.000000000 +0000
++++ PrF-G-main/api/app/mlp_overlay.py	2026-11-15 07:46:14.905325581 +0000
+@@ -90,21 +90,25 @@
+         t = tpl.get(fam)
+         if t is None:
+             out.append({"material": key, "family": None, "in_domain": False, "scores": None, "predicted": None,
+-                        "issues": ["no training data for this material"]})
++                        "untested": True, "issues": ["no training data for this material"]})
+             continue
+         rec = {**{c: t.get(c) for c in NUMERIC + CATEGORICAL if c in t}, **CONSTANT_IN_TRAINING,
+                "o2_initial_pct": o2_pct, "pressure_kpa": pressure_psi * KPA_PER_PSI, "flow_cms": flow_cm_s}
+         if fam == "pmma" and pmma_thickness_mm:
+             rec["thickness_mm"] = pmma_thickness_mm
+             rec["heated_thickness_mm"] = pmma_thickness_mm / 2 if pmma_sides == "two" else pmma_thickness_mm
+-        p = _forward(_vector(rec, pre), s["w"])
+         issues = _domain(rec, pre, gravity_g)
++        if issues:  # no number where there is no evidence: withhold the score, say "untested"
++            out.append({"material": key, "family": fam, "training_rows": t.get("n_training_rows"),
++                        "scores": None, "predicted": None, "in_domain": False, "untested": True, "issues": issues})
++            continue
++        p = _forward(_vector(rec, pre), s["w"])
+         out.append({"material": key, "family": fam, "training_rows": t.get("n_training_rows"),
+                     "scores": {c: round(float(v), 3) for c, v in zip(classes, p)},
+-                    "predicted": classes[int(np.argmax(p))], "in_domain": not issues, "issues": issues})
++                    "predicted": classes[int(np.argmax(p))], "in_domain": True, "untested": False, "issues": []})
+     return {
+         "model": "P3 MLP: sustained burning yes/no (16 hidden units, trained on NASA runs, grouped CV)",
+         "target": "sustained", "classes": classes, "per_material": out,
+         "firewall": "Second opinion only. Never changes status, alerts or crew options.",
+-        "note": "Scores are uncalibrated softmax outputs, not fire probabilities. Outside the training domain they are shown but flagged.",
++        "note": "Scores are uncalibrated softmax outputs, not fire probabilities. Outside the training domain no score is shown (untested).",
+     }
+diff -ruN -x '*.pyc' -x __pycache__ orig/PrF-G-main/api/test_api.py PrF-G-main/api/test_api.py
+--- orig/PrF-G-main/api/test_api.py	2026-11-15 07:37:45.000000000 +0000
++++ PrF-G-main/api/test_api.py	2026-11-15 07:46:14.905513430 +0000
+@@ -169,6 +169,12 @@
+ s, d = call("GET", "/mlp?o2_pct=34&pressure_psi=8.2&gravity_g=0.166&materials=pmma")
+ check("/mlp lunar surface flagged out of domain (O2, pressure, gravity)", s == 200
+       and not d["per_material"][0]["in_domain"] and len(d["per_material"][0]["issues"]) == 3)
++check("/mlp lunar surface: no score or prediction is returned (untested)", s == 200
++      and d["per_material"][0]["scores"] is None and d["per_material"][0]["predicted"] is None
++      and d["per_material"][0]["untested"] is True)
++s, d = call("GET", "/mlp?o2_pct=38&pressure_psi=8.2&gravity_g=0&materials=pmma,cotton_jersey")
++check("/mlp out-of-range O2 and pressure, every material: no scores", s == 200
++      and all(r["scores"] is None for r in d["per_material"]))
+ s1, a1 = call("GET", "/index?o2_pct=34&pressure_psi=8.2&gravity_g=0.166&materials=pmma")
+ call("GET", "/mlp?o2_pct=34&materials=pmma")
+ s2, a2 = call("GET", "/index?o2_pct=34&pressure_psi=8.2&gravity_g=0.166&materials=pmma")
+diff -ruN -x '*.pyc' -x __pycache__ orig/PrF-G-main/frontend/src/components/Dashboard.tsx PrF-G-main/frontend/src/components/Dashboard.tsx
+--- orig/PrF-G-main/frontend/src/components/Dashboard.tsx	2026-11-15 07:37:45.000000000 +0000
++++ PrF-G-main/frontend/src/components/Dashboard.tsx	2026-11-15 07:46:14.906009056 +0000
+@@ -131,9 +131,9 @@
+               <tr key={item.label}>
+                 <td>{item.label}</td>
+                 <td><span style={{ color: MC[s.st] }}>{s.lab}</span></td>
+-                <td className="mono">{!nn || !nn.scores ? <span className="muted">no training data</span>
++                <td className="mono">{nn?.untested && nn.family ? <span className="muted">untested: no score shown</span> : !nn || !nn.scores ? <span className="muted">no training data</span>
+                   : <><span className="nnbar"><i style={{ width: `${nn.scores.yes * 100}%` }} /></span> {nn.predicted === "yes" ? "likely" : "unlikely"} · score {nn.scores.yes.toFixed(2)}</>}</td>
+-                <td>{!nn || !nn.scores ? "—" : nn.in_domain ? <span style={{ color: "var(--ok)" }}>inside</span> : <span style={{ color: "var(--warn)" }} title={nn.issues.join("; ")}>outside: {nn.issues[0]}</span>}</td>
++                <td>{!nn ? "—" : nn.untested ? <span style={{ color: "var(--warn)" }} title={nn.issues.join("; ")}>outside: {nn.issues[0]}</span> : !nn.scores ? "—" : nn.in_domain ? <span style={{ color: "var(--ok)" }}>inside</span> : <span style={{ color: "var(--warn)" }} title={nn.issues.join("; ")}>outside: {nn.issues[0]}</span>}</td>
+               </tr>))}</tbody>
+           </table>
+           <p className="muted" style={{ fontSize: 12, margin: "8px 0 0" }}>{mlp.note} Where the two disagree, the crew sees both; the status still comes from the NASA evidence.</p>
+diff -ruN -x '*.pyc' -x __pycache__ orig/PrF-G-main/frontend/src/lib/api.ts PrF-G-main/frontend/src/lib/api.ts
+--- orig/PrF-G-main/frontend/src/lib/api.ts	2026-11-15 07:37:45.000000000 +0000
++++ PrF-G-main/frontend/src/lib/api.ts	2026-11-15 07:46:14.905655999 +0000
+@@ -52,7 +52,7 @@
+ }
+ 
+ /** P3's neural network (GET /mlp): a second opinion, read only by the dashboard's Neural network tab. */
+-export interface MLPRow { material: string; family: string | null; training_rows?: number; scores: Record<string, number> | null; predicted: string | null; in_domain: boolean; issues: string[] }
++export interface MLPRow { material: string; family: string | null; training_rows?: number; scores: Record<string, number> | null; predicted: string | null; in_domain: boolean; untested?: boolean; issues: string[] }
+ export interface MLPResult { model: string; per_material: MLPRow[]; firewall: string; note: string }
+ export async function fetchMLP(cabin: Cabin, g: Gravity, inv: Item[], signal?: AbortSignal): Promise<MLPResult> {
+   const r = await fetch(`${API_URL}/mlp?${params(cabin, 0, g, inv)}`, { signal });
+diff -ruN -x '*.pyc' -x __pycache__ orig/PrF-G-main/material_intelligence/README_BACKEND.md PrF-G-main/material_intelligence/README_BACKEND.md
+--- orig/PrF-G-main/material_intelligence/README_BACKEND.md	2026-11-15 07:37:45.000000000 +0000
++++ PrF-G-main/material_intelligence/README_BACKEND.md	2026-11-15 07:46:14.906374627 +0000
+@@ -3,7 +3,7 @@
+ This package is a backend-focused continuation of the uploaded project. Existing UI files were not present in the upload, so no frontend changes were made.
+ 
+ ## Run
+-1. Install `numpy` and `pandas`.
++1. `pip install -r requirements.txt` (numpy, pandas, scikit-learn).
+ 2. Supply the prepared model-input CSV at `data/runs.csv` (it stays local).
+    The trainer uses only configured features and the target from this table;
+    supporting/reference CSVs with different schemas are not concatenated.
+diff -ruN -x '*.pyc' -x __pycache__ orig/PrF-G-main/material_intelligence/evaluation.py PrF-G-main/material_intelligence/evaluation.py
+--- orig/PrF-G-main/material_intelligence/evaluation.py	2026-11-15 07:37:45.000000000 +0000
++++ PrF-G-main/material_intelligence/evaluation.py	2026-11-15 07:46:14.906148165 +0000
+@@ -27,9 +27,10 @@
+         matrix = self.confusion_matrix(actual, predicted)
+         accuracy = float(np.mean(actual == predicted))
+         metrics = {"accuracy": accuracy, "confusion_matrix": matrix.tolist(), "per_class": {}}
+-        print("\\nConfusion matrix:")
++        print("\nConfusion matrix:")
+         print(matrix)
+-        print(f"\\nAccuracy: {accuracy:.4f}")
++        majority = float(matrix.sum(axis=1).max() / matrix.sum())
++        print(f"\nAccuracy: {accuracy:.4f}  (always predicting the most common class: {majority:.4f})")
+         for i, name in enumerate(self.classes):
+             tp = matrix[i, i]
+             fp, fn = matrix[:, i].sum() - tp, matrix[i, :].sum() - tp
+@@ -40,5 +41,8 @@
+                 "precision": float(precision), "recall": float(recall),
+                 "f1": float(f1), "support": int(matrix[i, :].sum())
+             }
+-            print(f"\\nClass: {name}\\nPrecision: {precision:.4f}\\nRecall: {recall:.4f}\\nF1-score: {f1:.4f}")
++            print(f"\nClass: {name}\nPrecision: {precision:.4f}\nRecall: {recall:.4f}\nF1-score: {f1:.4f}")
++        metrics["majority_baseline"] = majority
++        metrics["balanced_accuracy"] = float(np.mean([m["recall"] for m in metrics["per_class"].values()]))
++        print(f"\nBalanced accuracy (mean recall): {metrics['balanced_accuracy']:.4f}")
+         return metrics
+diff -ruN -x '*.pyc' -x __pycache__ orig/PrF-G-main/material_intelligence/requirements.txt PrF-G-main/material_intelligence/requirements.txt
+--- orig/PrF-G-main/material_intelligence/requirements.txt	1970-01-01 00:00:00.000000000 +0000
++++ PrF-G-main/material_intelligence/requirements.txt	2026-11-15 07:46:14.906217628 +0000
+@@ -0,0 +1,3 @@
++numpy>=1.26
++pandas>=2.0
++scikit-learn>=1.3
