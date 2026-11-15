@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { GP_ERR, KPA, material } from "../lib/engine";
-import { API_URL, ask, fetchMLP, timeoutSignal, type MLPResult } from "../lib/api";
+import { API_URL, ask, fetchMLP, type MLPResult } from "../lib/api";
 import { nnModel, onNN, runNN } from "../lib/nn";
 import { fmtMET, fmtTrend, type Simulation, type View } from "../lib/sim";
 import { fmtEta, type Target } from "../lib/trend";
@@ -102,19 +102,14 @@ function NNTab({ sim }: { sim: Simulation }) {
   // poll the backend MLP while this tab is open (it never feeds back into the simulation)
   useEffect(() => {
     if (!API_URL) return;
-    // one request at a time: a slow answer is waited for (up to 10 s), never cancelled by the next tick
-    let alive = true, busy = false;
-    const stop = new AbortController();
+    let alive = true, ctl: AbortController | null = null;
     const tick = () => {
-      if (busy || sim.apiState === "waking") { if (sim.apiState === "waking") setErr("Waking the backend (up to a minute on the free server)…"); return; }
-      busy = true;
-      const { signal, done } = timeoutSignal(10000, stop.signal);
-      fetchMLP(sim.cabin, sim.phase.gval, sim.inv, signal).then((r) => { if (alive) { setMlp(r); setErr(null); } })
-        .catch(() => { if (alive) setErr("Backend unreachable: retrying"); })
-        .finally(() => { done(); busy = false; });
+      ctl?.abort(); ctl = new AbortController();
+      fetchMLP(sim.cabin, sim.phase.gval, sim.inv, ctl.signal).then((r) => { if (alive) { setMlp(r); setErr(null); } })
+        .catch((e) => { if (alive && e.name !== "AbortError") setErr("Backend unreachable"); });
     };
     tick(); const id = setInterval(tick, 2000);
-    return () => { alive = false; clearInterval(id); stop.abort(); };
+    return () => { alive = false; clearInterval(id); ctl?.abort(); };
   }, [sim]);
 
   const v = sim.view, m = nnModel(), pm = sim.inv.find((i) => i.exposed && i.key === "pmma");
@@ -158,7 +153,7 @@ export function Dashboard({ sim, onClose }: { sim: Simulation; onClose: () => vo
   const v = sim.view, [open, setOpen] = useState<string | null>(null), [tab, setTab] = useState<"ask" | "nn" | "log">("ask");
   const opts = sim.options(), col = SC[v.status], standby = v.status === "STANDBY", n = sim.active;
   useEffect(() => { const k = (e: KeyboardEvent) => e.key === "Escape" && onClose(); window.addEventListener("keydown", k); return () => window.removeEventListener("keydown", k); }, [onClose]);
-  const src = sim.apiState === "live" && v.source === "api" ? { cls: "src live", t: "Backend live" } : sim.apiState === "off" ? { cls: "src", t: "On-board engine" } : sim.apiState === "waking" ? { cls: "src", t: "Waking backend · on-board engine" } : { cls: "src", t: "Backend offline · retrying · on-board engine" };
+  const src = sim.apiState === "live" && v.source === "api" ? { cls: "src live", t: "Backend live" } : sim.apiState === "off" ? { cls: "src", t: "On-board engine" } : { cls: "src", t: "Backend offline · on-board engine" };
 
   return (
     <div className="scrim" onClick={(e) => e.target === e.currentTarget && onClose()}>

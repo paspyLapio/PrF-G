@@ -7,7 +7,7 @@ services:
     rootDir: api
     buildCommand: pip install -r requirements.txt
     startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
-    healthCheckPath: /health
+    healthCheckPath: /index?o2_pct=34
     envVars:
       - key: PYTHON_VERSION
         value: 3.12.7

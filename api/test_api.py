@@ -180,15 +180,5 @@ call("GET", "/mlp?o2_pct=34&materials=pmma")
 s2, a2 = call("GET", "/index?o2_pct=34&pressure_psi=8.2&gravity_g=0.166&materials=pmma")
 check("/mlp firewall: calling it never changes /index status", s1 == s2 == 200 and a1["status"] == a2["status"])
 
-# robustness: values the demo sends during a simulated fire, and the wake-up endpoint
-s, d = call("GET", "/index?o2_pct=34&pressure_psi=29&gravity_g=0.166&materials=pmma")
-check("/index during a fire (29 psia) answers instead of crashing", s == 200 and "status" in d)
-s, d = call("POST", "/ask", {"question": "why", "current": {"o2_pct": 34, "pressure_psi": 29, "flow_cm_s": 10, "gravity_g": 0.166, "design_o2_pct": 34, "materials": ["pmma"]}})
-check("/ask during a fire (29 psia) answers", s == 200)
-s, _ = call("GET", "/index?o2_pct=34&pressure_psi=200")
-check("/index impossible pressure -> 422, not 500", s == 422)
-s, d = call("GET", "/health")
-check("/health answers", s == 200 and d.get("ok") is True)
-
 print(f"\n{sum(results)}/{len(results)} checks passed")
 sys.exit(0 if all(results) else 1)

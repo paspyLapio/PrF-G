@@ -5,7 +5,7 @@ import { ignite, pickItem, respond, stepFire, type Fire } from "./fire";
 
 /** A caution left unresolved this long (simulated seconds) is followed by an ignition source (NASA designs assume one can exist). */
 export const IGNITE_AFTER = 900;
-import { API_URL, fetchStatus, timeoutSignal, wake, type BackendView } from "./api";
+import { API_URL, fetchStatus, type BackendView } from "./api";
 
 export type LogType = "caution" | "advisory" | "info" | "crew" | "declined" | "ack" | "resolved";
 export type Level = "ADVISORY" | "CAUTION";
@@ -36,20 +36,13 @@ export class Simulation {
   private nid = 0; private cand: { s: Status; since: number } | null = null; private heldReasons: Reason[] = [];
   o2History: [number, number][] = []; lastPhase = -1; cargoDone = false; surfaceT: number | null = null;
   cabin: Cabin = { o2: 0, psia: 0, u: 0 }; view!: View; veh!: Vehicle; toast: Toast | null = null;
-  backend: BackendView | null = null; apiState: "off" | "waking" | "live" | "offline" = API_URL ? "waking" : "off"; private apiBusy = false; private histT = 0; version = 0; private apiFails = 0; private apiT = 0;
+  backend: BackendView | null = null; apiState: "off" | "live" | "offline" = API_URL ? "offline" : "off"; private apiBusy = false; private histT = 0; version = 0; private apiFails = 0; private apiT = 0;
   fire: Fire | null = null; lowSince: number | null = null;
   onAlert?: (level: Level, text: string) => void;
   onFire?: (stage: Fire["stage"]) => void;
   private subs = new Set<() => void>();
 
-  constructor(mission: Mission) { this.mission = mission; this.reset(mission); this.wakeApi(); }
-
-  /** Start the backend as soon as the page opens, so it is awake by the time the flight reaches orbit. */
-  wakeApi() {
-    if (!API_URL) return;
-    this.apiState = "waking"; this.emit();
-    wake().then((ok) => { if (this.apiState === "waking") { this.apiState = ok ? "live" : "offline"; this.apiFails = ok ? 0 : this.apiFails; this.emit(); } });
-  }
+  constructor(mission: Mission) { this.mission = mission; this.reset(mission); }
   subscribe = (fn: () => void) => { this.subs.add(fn); return () => this.subs.delete(fn); };
   emit() { this.version++; this.subs.forEach((f) => f()); }
 
@@ -149,15 +142,14 @@ export class Simulation {
   }
 
   private pollApi() {
-    if (!API_URL || this.apiBusy || this.apiState === "waking" || this.phase.g === "1g") return;
-    // poll every 1.5 s while live; back off to 5 s while offline, and recover on the first answer
-    const now = performance.now(); if (now - this.apiT < (this.apiState === "live" ? 1500 : 5000)) return;
+    if (!API_URL || this.apiBusy || this.phase.g === "1g") return;
+    const now = performance.now(); if (now - this.apiT < 1500) return;
     this.apiT = now; this.apiBusy = true;
-    const { signal, done } = timeoutSignal(8000);
-    fetchStatus(this.cabin, this.design.o2, this.phase.gval, this.inv, signal)
+    const ctl = new AbortController(); const to = setTimeout(() => ctl.abort(), 2500);
+    fetchStatus(this.cabin, this.design.o2, this.phase.gval, this.inv, ctl.signal)
       .then((b) => { this.backend = b; this.apiState = "live"; this.apiFails = 0; })
-      .catch(() => { this.apiFails++; if (this.apiFails >= 3) { this.apiState = "offline"; this.backend = null; } })
-      .finally(() => { done(); this.apiBusy = false; });
+      .catch(() => { this.apiFails++; if (this.apiFails >= 2) { this.apiState = "offline"; this.backend = null; } })
+      .finally(() => { clearTimeout(to); this.apiBusy = false; });
   }
 
   private notice(s: Status, level: Level): Notice {

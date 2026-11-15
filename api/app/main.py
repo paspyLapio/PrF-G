@@ -10,21 +10,7 @@ from . import model as M, explain as E, procedures as P, mlp_overlay as NN
 
 app = FastAPI(title="Fire Margin API", version="0.3")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
-from fastapi.responses import JSONResponse, RedirectResponse
-from fastapi import Request
-from pydantic import ValidationError
-
-
-@app.exception_handler(ValidationError)
-async def _bad_conditions(_: Request, exc: ValidationError):
-    """Conditions built inside a GET handler: out-of-range values are the caller's error (422), not a crash (500)."""
-    return JSONResponse(status_code=422, content={"detail": exc.errors(include_url=False, include_context=False)})
-
-
-@app.get("/health", include_in_schema=False)
-def health():
-    """Cheap wake-up and uptime check (the free Render plan sleeps after ~15 min idle)."""
-    return {"ok": True}
+from fastapi.responses import RedirectResponse
 
 @app.get("/", include_in_schema=False)
 def root():
@@ -38,8 +24,7 @@ AUDIT: list[dict] = []
 
 class Conditions(BaseModel):
     o2_pct: float = Field(M.LUNAR_PRESET["o2_pct"], ge=10, le=100)
-    # up to 60 psia: during a simulated cabin fire the pressure climbs past normal limits (Apollo 204 ruptured at >=29 psia)
-    pressure_psi: float = Field(M.LUNAR_PRESET["pressure_psi"], gt=0, le=60)
+    pressure_psi: float = Field(M.LUNAR_PRESET["pressure_psi"], gt=0, le=20)
     flow_cm_s: float = Field(10.0, ge=0)
     gravity_g: float = Field(M.LUNAR_PRESET["gravity_g"], ge=0, le=1)
     flow_direction: Literal["opposed", "concurrent"] = "opposed"
