@@ -63,6 +63,10 @@ researchers are co-authors.
 
 | Source | What it gives us | Link |
 | --- | --- | --- |
+| Report of the Apollo 204 Review Board (NASA, 1967) | Fire reported 23:31:04.7 GMT; cabin ruptured about 23:31:19 at "at least 29 psia"; lethal atmosphere by 23:31:30. Default structural limit in the fire-consequence model | https://www.nasa.gov/wp-content/uploads/static/history/Apollo204/invest.html |
+| JSC 20584 Rev C, Spacecraft Maximum Allowable Concentrations | CO 425 ppm (485 mg/m³) 1 h, 100 ppm (114 mg/m³) 24 h: CO limits in the fire-consequence model | https://ntrs.nasa.gov/api/citations/20240007713/downloads/JSC%2020584_SMACs_Rev%20C_FINAL.pdf |
+| OCHMO-TB-003 Habitable Atmosphere (NASA technical brief on NASA-STD-3001 Vol. 2) | [V2 6006] total pressure 5.0-15.0 psia; [V2 6003] hypoxia floor 122 mmHg (2.36 psia) | https://www.nasa.gov/wp-content/uploads/2023/12/ochmo-tb-003-habitable-atmosphere.pdf |
+| Orion crew module (NASA) | Habitable volume 330 ft³ (9.3 m³): default cabin volume | https://www.nasa.gov/reference/crew-module/ |
 | NASA-STD-6001B with Change 3 (2025), Flammability, Offgassing, and Compatibility Requirements and Test Procedures | Test 1 pass criterion; ground (1 g) certification behind the launch STANDBY status | https://standards.nasa.gov/standard/nasa/nasa-std-6001 |
 | NASA-STD-3001 Volume 2, Revision F, NASA Spaceflight Human-System Standard | Cabin pressure and atmosphere limits | https://standards.nasa.gov/human-factors-and-health |
 | NSS 1740.15 Safety Standard for Oxygen and Oxygen Systems (NASA, 1996) | Oxygen-system safety context | https://ntrs.nasa.gov/archive/nasa/casi.ntrs.nasa.gov/19960021046.pdf |
@@ -98,12 +102,19 @@ researchers are co-authors.
 | 14 CFR 25.1322 Flightcrew alerting (FAA) | Warning: immediate awareness, immediate response; Caution: immediate awareness, subsequent response; Advisory: awareness, may need a response. Alerts must be acknowledgeable; false and nuisance alerts minimised. A design reference only; PrF-G is not certified to it | https://www.law.cornell.edu/cfr/text/14/25.1322 |
 | Human Factors Considerations in the Design and Evaluation of Flight Deck Displays and Controls, V2 (Volpe for FAA), Chapter 4 alerting | Most urgent alert first, prioritising simultaneous alerts, acknowledgement does not erase the message, managing nuisance alerts | https://www.volpe.dot.gov/sites/volpe.dot.gov/files/docs/Human_Factors_Considerations_in_the_Design_and_Evaluation_of_Flight_Deck_Displays_and_Controls_V2.pdf |
 
-## 2.4 Context and media (not test data)
+## 2.4 Fire engineering references (fire-consequence model physics)
+
+| Source | What it gives us | Link |
+| --- | --- | --- |
+| NFPA 72, National Fire Alarm and Signaling Code, Annex B (t-squared fires) | Growth coefficients: slow 0.00293, medium 0.01172, fast 0.0469 kW/s² | https://www.nfpa.org/codes-and-standards/nfpa-72-standard-development/72 |
+| SFPE Handbook of Fire Protection Engineering (Tewarson, generation of heat and chemical compounds in fires) | PMMA effective heat of combustion 24.2 MJ/kg, CO yield 0.010 g/g | https://link.springer.com/referencework/10.1007/978-1-4939-2565-0 |
+
+## 2.5 Context and media (not test data)
 
 - Space.com, "Fire-in-space experiment could soon make its way to the moon": https://www.space.com/international-space-station-nasa-fire-experiment-moon
 - ISS official Instagram post on the Saffire-I composite image (secondary; not cited as evidence).
 
-## 2.5 Material descriptions only (not test data)
+## 2.6 Material descriptions only (not test data)
 
 Product pages used only to describe what a material is: Kimwipes (eBay), Kapton polyimide (Croylek),
 PTFE sheet (BuyPlastic), PTFE fibre (Gore), aramid fabric (Nam Liong), Nomex fabric (supplier page),

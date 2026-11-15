@@ -71,7 +71,7 @@ function AskTab({ sim }: { sim: Simulation }) {
     if (!q.trim()) return;
     setBusy(true);
     try {
-      if (API_URL && sim.apiState === "live") { const r = await ask(q, sim.cabin, sim.design.o2, sim.phase.g, sim.inv); setA({ q, ...r, src: "backend /ask" }); }
+      if (API_URL && sim.apiState === "live") { const r = await ask(q, sim.cabin, sim.design.o2, sim.phase.gval, sim.inv); setA({ q, ...r, src: "backend /ask" }); }
       else setA({ q, ...localAnswer(q, sim.view, sim), src: "on-board engine" });
     } catch { setA({ q, ...localAnswer(q, sim.view, sim), src: "on-board engine (backend unreachable)" }); }
     setBusy(false);
@@ -105,7 +105,7 @@ function NNTab({ sim }: { sim: Simulation }) {
     let alive = true, ctl: AbortController | null = null;
     const tick = () => {
       ctl?.abort(); ctl = new AbortController();
-      fetchMLP(sim.cabin, sim.phase.g, sim.inv, ctl.signal).then((r) => { if (alive) { setMlp(r); setErr(null); } })
+      fetchMLP(sim.cabin, sim.phase.gval, sim.inv, ctl.signal).then((r) => { if (alive) { setMlp(r); setErr(null); } })
         .catch((e) => { if (alive && e.name !== "AbortError") setErr("Backend unreachable"); });
     };
     tick(); const id = setInterval(tick, 2000);
@@ -113,7 +113,7 @@ function NNTab({ sim }: { sim: Simulation }) {
   }, [sim]);
 
   const v = sim.view, m = nnModel(), pm = sim.inv.find((i) => i.exposed && i.key === "pmma");
-  const x = { o2_pct: +v.cabin.o2.toFixed(2), pressure_kpa: +(v.cabin.psia * KPA).toFixed(1), flow_cm_s: +v.cabin.u.toFixed(1), gravity_g: v.g === "micro" ? 0 : v.g === "lunar" ? 0.166 : 1, thickness_mm: pm?.t ? (pm.sides === "two" ? pm.t / 2 : pm.t) : null };
+  const x = { o2_pct: +v.cabin.o2.toFixed(2), pressure_kpa: +(v.cabin.psia * KPA).toFixed(1), flow_cm_s: +v.cabin.u.toFixed(1), gravity_g: sim.phase.gval, thickness_mm: pm?.t ? (pm.sides === "two" ? pm.t / 2 : pm.t) : null };
   const out = runNN(x);
   const rows = v.materials.map(({ item, s }) => ({ item, s, nn: mlp?.per_material.find((r) => r.material === item.key) }));
   return (

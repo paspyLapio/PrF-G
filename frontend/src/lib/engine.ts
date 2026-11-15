@@ -5,7 +5,7 @@
  */
 import data from "../data/evidence.json";
 
-export type Gravity = "1g" | "micro" | "lunar";
+export type Gravity = "1g" | "micro" | "partial";
 export type Status = "STANDBY" | "NOMINAL" | "REDUCED" | "UNVERIFIED" | "LOW";
 export type MatStateKind = "ok" | "near" | "unk" | "smoke";
 
@@ -136,7 +136,7 @@ export function evaluate(inv: Item[], cabin: Cabin, design: DesignPoint, g: Grav
     if (unc.length) reasons.push({ k: "cov", t: `${unc.length} of ${burn.length} exposed materials have no NASA test evidence here.` });
     if (head != null && head < 0) reasons.push({ k: "head", t: -head < 0.05 ? `Cabin O₂ has reached the highest tested O₂ for ${weak!.label} (${f1(weak!.c!.o2!)}%).` : `Cabin O₂ is ${f1(-head)} points above the highest tested O₂ for ${weak!.label}.` });
     if (bandU.c === "sensitive") reasons.push({ k: "u", t: `Airflow ${f1(u)} cm/s: the range where BASS-II flames were most flow-sensitive.` });
-    if (g === "lunar") reasons.push({ k: "g", t: "No partial-gravity fire data exists in NASA PSI." });
+    if (g === "partial") reasons.push({ k: "g", t: "No partial-gravity fire data exists in NASA PSI." });
     if (!reasons.length) reasons.push({ k: "ok", t: "Every exposed material has NASA test evidence at these conditions." });
   }
   const pm = states.find((x) => x.s.st === "ok");
