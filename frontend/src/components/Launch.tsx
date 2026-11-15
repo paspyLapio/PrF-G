@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { MATS, evaluate, type Item } from "../lib/engine";
 import { PRESETS, type AtmKey, type Mission } from "../lib/mission";
-import { SC, f1 } from "../lib/ui";
+import { MENU_URL, SC, f1 } from "../lib/ui";
 
 const clone = (m: Mission): Mission => structuredClone(m);
 /** Pre-flight check: every screened phase of this route (microgravity or partial gravity) at its design point. */
@@ -23,6 +23,7 @@ export function Launch({ onLaunch }: { onLaunch: (m: Mission) => void }) {
     <div className="intro">
       <div className="icard">
         <div>
+          {MENU_URL && <a className="btn ghost menulink" href={MENU_URL} style={{ float: "right" }}>‹ Back to menu</a>}
           <div className="eyebrow">NASA Space Apps 2026 · Flame in Freefall</div>
           <h1>PrF-G</h1>
           <p className="tagline">Prevent Fire-Guard. An onboard advisor that reads the telemetry the spacecraft already has and tells the crew, before anything burns, whether NASA has ever tested their cabin at these conditions.</p>

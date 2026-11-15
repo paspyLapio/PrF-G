@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>PrF-G · Presentation</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" />
+  <link rel="stylesheet" href="/site.css" />
+  <style>
+    body { height: 100vh; overflow: hidden; }
+    .wrap { height: 100%; display: flex; flex-direction: column; }
+    .bar {
+      display: flex; align-items: center; gap: 10px; flex-wrap: wrap; border-bottom: 1px solid var(--edge); background: var(--panel);
+      padding: calc(10px + env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) 10px max(16px, env(safe-area-inset-left, 0px));
+    }
+    .bar .title { font-weight: 700; letter-spacing: .08em; font-size: 16px; margin-right: 6px; }
+    .bar .sp { flex: 1; }
+    .bar .src { font-size: 12px; color: var(--muted); }
+    .stage { flex: 1; min-height: 0; position: relative; background: #000; }
+    .stage iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; background: #000; }
+    .msg { position: absolute; inset: 0; display: grid; place-items: center; padding: 24px; background: var(--space); }
+    .card { width: min(620px, 100%); padding: 28px; border: 1px solid var(--edge-2); border-radius: 4px; background: var(--panel); display: flex; flex-direction: column; gap: 14px; }
+    .card h2 { margin: 0; font-size: 24px; letter-spacing: .05em; }
+    .card p { margin: 0; color: var(--ink-2); }
+    .card ol { margin: 0; padding-left: 20px; color: var(--ink-2); display: flex; flex-direction: column; gap: 4px; }
+    .card code { font-family: var(--f-mono); color: var(--ink); background: #ffffff0d; padding: 1px 6px; border-radius: 2px; }
+    .acts { display: flex; gap: 8px; flex-wrap: wrap; }
+    [hidden] { display: none !important; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="bar">
+      <a class="btn" href="/">‹ Menu</a>
+      <span class="title">PRESENTATION</span>
+      <span class="src mono" id="src"></span>
+      <span class="sp"></span>
+      <a class="btn" id="full" hidden target="_blank" rel="noopener">Full screen ↗</a>
+      <a class="btn" id="dl" hidden>Download</a>
+      <a class="btn" id="up" hidden target="_blank" rel="noopener">Upload new version</a>
+      <a class="btn primary" href="/demo/">Live demo ›</a>
+    </div>
+    <div class="stage" id="stage">
+      <div class="msg" id="msg"><div class="card"><p class="mono">Loading presentation…</p></div></div>
+    </div>
+  </div>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const show = (el, href) => { el.href = href; el.hidden = false; };
+
+    function frame(src, title) {
+      const f = document.createElement("iframe");
+      f.src = src; f.title = title; f.allow = "fullscreen"; f.allowFullscreen = true;
+      $("stage").replaceChildren(f);
+    }
+
+    function message(html) { $("msg").firstElementChild.innerHTML = html; }
+
+    /** Google Slides share/edit links -> embeddable player; other links are embedded as given. */
+    function embeddable(url) {
+      const g = url.match(/^https:\/\/docs\.google\.com\/presentation\/d\/(e\/)?([\w-]+)/);
+      if (g) return `https://docs.google.com/presentation/d/${g[1] ?? ""}${g[2]}/embed?start=false&loop=false`;
+      if (/canva\.com\/design\//.test(url) && !/[?&]embed/.test(url)) return url.split("?")[0].replace(/\/(edit|view)$/, "/view") + "?embed";
+      return url;
+    }
+
+    fetch("/presentation/info").then((r) => r.json()).then((d) => {
+      show($("up"), d.uploadUrl);
+      if (d.kind === "pdf") {
+        $("src").textContent = `${d.dir}/${d.name}`;
+        show($("full"), d.file); show($("dl"), d.file + "?download");
+        frame(d.file + "#view=FitH", "PrF-G presentation");
+      } else if (d.kind === "pptx") {
+        $("src").textContent = `${d.dir}/${d.name}`;
+        const viewer = "https://view.officeapps.live.com/op/embed.aspx?src=" + encodeURIComponent(d.raw);
+        show($("full"), viewer); show($("dl"), d.file + "?download");
+        frame(viewer, "PrF-G presentation");
+      } else if (d.kind === "link") {
+        $("src").textContent = new URL(d.url).hostname;
+        show($("full"), d.url);
+        frame(embeddable(d.url), "PrF-G presentation");
+      } else {
+        message(`
+          <h2>No presentation uploaded yet</h2>
+          <p>The site shows whatever is in the repo's <code>${d.dir}/</code> folder. Add one of these and it appears here within a few minutes:</p>
+          <ol>
+            <li><code>${d.dir}/presentation.pdf</code> (best: works on every device)</li>
+            <li><code>${d.dir}/presentation.pptx</code> (shown with the Office online viewer)</li>
+            <li><code>${d.dir}/link.txt</code> with a Google Slides or Canva share link on the first line</li>
+          </ol>
+          <div class="acts">
+            <a class="btn primary" href="${d.uploadUrl}" target="_blank" rel="noopener">Upload to the repo ↗</a>
+            <a class="btn" href="${d.folderUrl}" target="_blank" rel="noopener">Open folder on GitHub</a>
+          </div>`);
+      }
+    }).catch(() => message(`<h2>Presentation unavailable</h2><p>Could not reach the repository. Try again in a moment.</p><div class="acts"><a class="btn" href="/">‹ Back to menu</a></div>`));
+  </script>
+</body>
+</html>

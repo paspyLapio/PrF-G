@@ -2,7 +2,7 @@ import { useState } from "react";
 import { caption, phaseIndex, phaseProgress } from "../lib/mission";
 import { IGNITE_AFTER, fmtMET, type Simulation } from "../lib/sim";
 import { LIMITS, timeToBurst } from "../lib/fire";
-import { SC, f1 } from "../lib/ui";
+import { MENU_URL, SC, f1 } from "../lib/ui";
 
 export function Header({ sim }: { sim: Simulation }) {
   const p = sim.phase;
@@ -137,6 +137,7 @@ export function Timeline({ sim, voice, setVoice, onRestart }: { sim: Simulation;
         <button className="pbtn" aria-expanded={menu} onClick={() => setMenu(!menu)} disabled={!live} title={live ? "Inject an event" : "Available in orbit"} style={{ opacity: live ? 1 : 0.5 }}>Inject event</button>
         <button className="pbtn" aria-pressed={voice} onClick={() => setVoice(!voice)} title="Speak alerts">Voice</button>
         <button className="pbtn" onClick={onRestart}>New mission</button>
+        {MENU_URL && <a className="pbtn menulink" href={MENU_URL}>‹ Menu</a>}
       </div>
       {menu && (
         <div className="popover glass" role="menu">
