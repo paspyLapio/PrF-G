@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Singularities · PrF-G</title>
+  <meta name="description" content="Team Singularities presents PrF-G: Prevent Fire-Guard, a pre-fire margin assistant for crewed spacecraft and lunar habitats, grounded in NASA microgravity fire tests." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=Share+Tech+Mono&family=Unbounded:wght@500;700;900&display=swap" />
+  <link rel="stylesheet" href="/vendor/lenis.css" />
+  <link rel="stylesheet" href="/home.css" />
+</head>
+<body data-active="hero">
+
+  <!-- ============================================================ top bar -->
+  <nav class="top" aria-label="Main">
+    <a class="mark" href="#hero"><i></i>Singularities</a>
+    <div class="links">
+      <a href="#repo" data-for="repo">Repo</a>
+      <a href="#demo" data-for="demo">Demo</a>
+      <a href="#presentation" data-for="presentation">Presentation</a>
+    </div>
+  </nav>
+
+  <!-- ============================================================ hero -->
+  <header class="hero" id="hero" data-sec="hero">
+    <canvas id="hole" aria-hidden="true"></canvas>
+    <div class="hero-in">
+      <div class="kicker reveal">NASA Space Apps 2026 <span>·</span> Flame in Freefall</div>
+      <h1 class="reveal" aria-label="Singularities">
+        <span class="word">Singularities</span>
+      </h1>
+
+    </div>
+    <p class="lede reveal">presents <b>PrF-G</b>: Prevent Fire-Guard. An onboard advisor that reads the telemetry a spacecraft already has
+        and tells the crew, <em>before anything burns</em>, how far they are from the conditions NASA has ever tested fire in.</p>
+    <a class="cue" href="#repo" aria-label="Scroll down"><span>Scroll</span><i></i></a>
+  </header>
+
+  <main>
+    <!-- ============================================================ 01 REPO -->
+    <section class="sec repo" id="repo" data-sec="repo">
+      <div class="grid">
+        <div class="copy">
+          <div class="num reveal">01 <span>/ Repo</span></div>
+          <h2 class="reveal">Built on <em>evidence</em>,<br/>not guesswork.</h2>
+          <p class="reveal">Every status PrF-G shows traces back to a NASA microgravity fire run. The repository holds the evidence base,
+            the models fitted to it, the API that serves it and this site.</p>
+          <dl class="stats reveal">
+            <div><dt><span data-count="76">0</span></dt><dd>flight &amp; drop-tower records</dd></div>
+            <div><dt><span data-count="72">0</span></dt><dd>verified with a source link</dd></div>
+            <div><dt><span data-count="46">0</span></dt><dd>automated API checks</dd></div>
+            <div><dt>×<span data-count="1.25" data-dec="2">0</span></dt><dd>GP held-out error</dd></div>
+          </dl>
+          <div class="ctas reveal">
+            <a class="btn" href="/repo" target="_blank" rel="noopener">View on GitHub <b>↗</b></a>
+            <span class="hint">Python · FastAPI · NumPy · React</span>
+          </div>
+        </div>
+
+        <div class="vis reveal">
+          <div class="term" aria-label="Terminal running the PrF-G test suite">
+            <div class="tbar"><i></i><i></i><i></i><span>~/prf-g</span></div>
+            <pre id="term"></pre>
+          </div>
+          <div class="tree" aria-hidden="true">
+            <div class="branch"><b>data/</b><span>runs · materials · investigations</span></div>
+            <div class="branch"><b>models/gp</b><span>Gaussian process, 39 BASS-II segments</span></div>
+            <div class="branch"><b>material_intelligence/</b><span>MLP second opinion</span></div>
+            <div class="branch"><b>api/</b><span>/index · /explain · /ask · /procedures</span></div>
+            <div class="branch"><b>frontend/</b><span>this site + the live demo</span></div>
+          </div>
+          <div class="commits" id="commits" aria-live="polite"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================ 02 DEMO -->
+    <section class="sec demo" id="demo" data-sec="demo">
+      <div class="grid flip">
+        <div class="copy">
+          <div class="num reveal">02 <span>/ Demo</span></div>
+          <h2 class="reveal">Fly the mission.<br/>Watch the <em>margin</em>.</h2>
+          <p class="reveal">Launch a simulated flight to the Moon, a station rotation, a lunar outpost or a Mars expedition.
+            Cabin O₂, pressure and airflow drift in real time; PrF-G compares them with tested fire conditions and tells the crew
+            what changed, how far they are from the edge, and what they could do.</p>
+          <ul class="feats reveal">
+            <li><b>Fire-margin ring</b> with plain-language status</li>
+            <li><b>Inject events</b>: O₂ leaks, fan failures, exposed materials</li>
+            <li><b>Ask PrF-G</b> why, with cited NASA runs</li>
+          </ul>
+          <div class="ctas reveal">
+            <a class="btn" href="/demo/">Launch live demo <b>›</b></a>
+            <span class="hint">Space pauses · D opens the dashboard</span>
+          </div>
+        </div>
+
+        <div class="vis reveal">
+          <div class="flight" aria-label="Animated preview of the demo">
+            <svg viewBox="0 0 520 300" class="traj" aria-hidden="true">
+              <defs>
+                <radialGradient id="gE" cx="40%" cy="35%"><stop offset="0" stop-color="#5fb2ff"/><stop offset="1" stop-color="#0d2a52"/></radialGradient>
+                <radialGradient id="gM" cx="40%" cy="35%"><stop offset="0" stop-color="#cfd6de"/><stop offset="1" stop-color="#4a525b"/></radialGradient>
+              </defs>
+              <circle cx="92" cy="208" r="62" fill="none" stroke="currentColor" stroke-opacity=".18" stroke-dasharray="3 5"/>
+              <circle cx="92" cy="208" r="44" fill="url(#gE)"/>
+              <circle cx="430" cy="82" r="38" fill="none" stroke="currentColor" stroke-opacity=".18" stroke-dasharray="3 5"/>
+              <circle cx="430" cy="82" r="22" fill="url(#gM)"/>
+              <path id="path" class="path" d="M92 146 C 70 120, 150 90, 230 120 S 360 160, 400 110 S 470 50, 452 82" fill="none" stroke="currentColor" stroke-width="1.6"/>
+              <g id="craft"><rect x="-5" y="-5" width="10" height="10" fill="#fff"/><rect x="-9" y="-9" width="18" height="18" fill="none" stroke="currentColor"/></g>
+              <text x="92" y="292" text-anchor="middle" class="lbl">EARTH</text>
+              <text x="430" y="138" text-anchor="middle" class="lbl">MOON</text>
+            </svg>
+            <div class="hud">
+              <div class="met mono" id="met">T+00:00:00</div>
+              <div class="ringbox" id="ringbox">
+                <svg viewBox="0 0 80 80" aria-hidden="true"><circle cx="40" cy="40" r="32" class="rbg"/><circle cx="40" cy="40" r="32" class="rfg" id="rfg"/></svg>
+                <div><small>Fire margin</small><b id="rstate">STANDBY</b></div>
+              </div>
+              <div class="tele">
+                <div><small>O₂</small><b class="mono" id="o2">20.9</b><i>%</i></div>
+                <div><small>Pressure</small><b class="mono" id="psi">14.7</b><i>psia</i></div>
+                <div><small>Airflow</small><b class="mono" id="flow">10.1</b><i>cm/s</i></div>
+              </div>
+              <svg viewBox="0 0 200 40" class="spark" preserveAspectRatio="none" aria-hidden="true"><polyline id="spark" points=""/></svg>
+            </div>
+            <div class="toast" id="toast"><b>CAUTION</b><span>O₂ trending up · 2.4 pts to the tested edge</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================ 03 PRESENTATION -->
+    <section class="sec pres" id="presentation" data-sec="presentation">
+      <div class="grid">
+        <div class="copy">
+          <div class="num reveal">03 <span>/ Presentation</span></div>
+          <h2 class="reveal">The case for<br/>a <em>pre-fire</em> margin.</h2>
+          <p class="reveal">Fire in microgravity does not behave like fire on Earth: no buoyant flow, slower but harder-to-see
+            flames, and materials that pass ground tests can burn at higher oxygen. The deck walks through the problem, the NASA
+            evidence behind PrF-G, and how a crew would use it.</p>
+          <div class="deckstate reveal" id="deckstate"><i></i><span>Checking for the latest deck…</span></div>
+          <div class="ctas reveal">
+            <a class="btn" href="/presentation/">Open the deck <b>›</b></a>
+            <a class="btn ghost" id="dl" href="/presentation/file?download" hidden>Download</a>
+          </div>
+        </div>
+
+        <div class="vis reveal">
+          <div class="deck" id="deck">
+            <div class="slide s3" aria-hidden="true"><div class="sh">NASA evidence</div><div class="bars"><i style="--h:40%"></i><i style="--h:62%"></i><i style="--h:55%"></i><i style="--h:80%"></i><i style="--h:70%"></i><i style="--h:92%"></i></div><div class="sf">BASS-II · SAFFIRE · drop tower</div></div>
+            <div class="slide s2" aria-hidden="true"><div class="sh">How the crew uses it</div><div class="rows"><span></span><span></span><span></span><span class="hot"></span></div><div class="sf">Status → reasons → options</div></div>
+            <div class="slide s1" aria-hidden="true">
+              <div><div class="sh">PrF-G</div><div class="ssub">How far is this cabin from conditions NASA has tested fire in?</div></div>
+              <div class="gauge">
+                <svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="48" class="gbg"/><circle cx="60" cy="60" r="48" class="gfg" id="gfg"/></svg>
+                <div class="gv"><b id="gval">0</b><small>% tested</small></div>
+              </div>
+              <div class="sf">Prevent Fire-Guard</div>
+            </div>
+            <div class="embers" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+          </div>
+          <!-- Shown when the repo has a PDF: the real deck, rendered in the slides above with pdf.js. -->
+          <div class="deckctl" id="deckctl" hidden>
+            <button type="button" id="prev" aria-label="Previous slide">‹</button>
+            <span class="mono" id="pg" aria-live="polite">1 / 1</span>
+            <button type="button" id="next" aria-label="Next slide">›</button>
+            <a href="/presentation/" class="full">Present full screen ⛶</a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ============================================================ footer -->
+  <footer class="foot">
+    <div class="fw">Singularities</div>
+    <nav aria-label="Footer">
+      <a href="/repo" target="_blank" rel="noopener">Repo</a>
+      <a href="/demo/">Demo</a>
+      <a href="/presentation/">Presentation</a>
+    </nav>
+    <p>PrF-G · NASA Space Apps 2026. Telemetry in the demo is simulated; checklists are illustrative, not NASA procedures.</p>
+  </footer>
+
+  <script src="/vendor/lenis.min.js" defer></script>
+  <script src="/home.js" defer></script>
+</body>
+</html>

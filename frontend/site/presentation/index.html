@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>PrF-G · Presentation</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" />
+  <link rel="stylesheet" href="/site.css" />
+  <style>
+    html, body { height: 100%; }
+    body { overflow: hidden; background: #000; }
+    [hidden] { display: none !important; }
+
+    /* ------------------------------------------------ slideshow (PDF) */
+    .show { position: fixed; inset: 0; background: #000; user-select: none; -webkit-user-select: none; touch-action: pan-y; }
+    .stage { position: absolute; inset: 0; display: grid; place-items: center; }
+    .slide { position: absolute; box-shadow: 0 30px 120px rgba(0,0,0,.6); background: #fff; }
+    .slide.enter { animation: in .32s cubic-bezier(.2,.7,.1,1) both; }
+    .slide.enter.back { animation-name: inb; }
+    .slide.leave { animation: out .32s ease both; }
+    @keyframes in { from { opacity: 0; transform: translateX(28px) scale(.995); } to { opacity: 1; transform: none; } }
+    @keyframes inb { from { opacity: 0; transform: translateX(-28px) scale(.995); } to { opacity: 1; transform: none; } }
+    @keyframes out { to { opacity: 0; } }
+    .hit { position: absolute; top: 0; bottom: 0; z-index: 2; cursor: pointer; }
+    .hit.l { left: 0; width: 30%; } .hit.r { right: 0; width: 70%; }
+    .hide-cursor .hit { cursor: none; }
+
+    .chrome { position: absolute; left: 0; right: 0; z-index: 5; display: flex; align-items: center; gap: 10px; transition: opacity .35s, transform .35s; }
+    .idle .chrome { opacity: 0; pointer-events: none; }
+    .idle .chrome.top { transform: translateY(-8px); } .idle .chrome.bot { transform: translateY(8px); }
+    .chrome.top { top: 0; padding: calc(14px + env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) 30px max(16px, env(safe-area-inset-left, 0px)); background: linear-gradient(rgba(0,0,0,.7), transparent); }
+    .chrome.bot { bottom: 0; justify-content: center; padding: 30px max(16px, env(safe-area-inset-right, 0px)) calc(16px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); background: linear-gradient(transparent, rgba(0,0,0,.75)); }
+    .chrome .title { font-weight: 700; letter-spacing: .1em; font-size: 14px; color: #fff; }
+    .chrome .name { font: 12px var(--f-mono); color: #9aa3ab; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+    .chrome .sp { flex: 1; }
+    .ib { width: 46px; height: 46px; border-radius: 50%; border: 1px solid rgba(255,255,255,.18); background: rgba(20,20,22,.7); color: #fff; font: 600 20px/1 var(--f-display); display: grid; place-items: center; cursor: pointer; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); transition: background .2s, border-color .2s, transform .2s; }
+    .ib:hover:not(:disabled) { background: var(--accent); border-color: var(--accent); color: #140800; transform: scale(1.05); }
+    .ib:disabled { opacity: .35; cursor: default; }
+    .ib svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; }
+    .count { min-width: 92px; text-align: center; font: 16px var(--f-mono); color: #fff; letter-spacing: .08em; }
+    .count small { color: #8b949c; }
+    .pill { height: 38px; padding: 0 14px; border-radius: 19px; border: 1px solid rgba(255,255,255,.18); background: rgba(20,20,22,.7); color: #fff; font: 600 12px var(--f-display); letter-spacing: .12em; text-transform: uppercase; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; cursor: pointer; }
+    .pill:hover { border-color: var(--accent); color: var(--accent); }
+    .progress { position: absolute; left: 0; right: 0; bottom: 0; height: 3px; z-index: 6; background: rgba(255,255,255,.08); }
+    .progress i { display: block; height: 100%; width: 0; background: var(--accent); box-shadow: 0 0 12px var(--accent); transition: width .35s cubic-bezier(.2,.7,.1,1); }
+
+    .hint { position: absolute; left: 50%; top: 50%; z-index: 7; transform: translate(-50%, -50%); padding: 16px 22px; border-radius: 10px; background: rgba(12,12,14,.88); border: 1px solid rgba(255,255,255,.14); color: #dfe3e7; font-size: 14px; text-align: center; line-height: 1.8; transition: opacity .6s; pointer-events: none; }
+    .hint kbd { font: 12px var(--f-mono); padding: 2px 7px; border-radius: 4px; border: 1px solid rgba(255,255,255,.3); color: #fff; margin: 0 2px; }
+    .hint.gone { opacity: 0; }
+
+    .loading { position: absolute; inset: 0; display: grid; place-content: center; gap: 14px; text-align: center; color: #9aa3ab; font: 13px var(--f-mono); z-index: 4; }
+    .loading i { display: block; width: 220px; height: 3px; background: rgba(255,122,26,.15); }
+    .loading i b { display: block; height: 100%; width: var(--pct, 0%); background: var(--accent); transition: width .2s; }
+
+    /* ------------------------------------------------ other kinds (PPTX / link / none) */
+    .wrap { height: 100%; display: flex; flex-direction: column; background: var(--space); }
+    .bar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; border-bottom: 1px solid var(--edge); background: var(--panel); padding: calc(10px + env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) 10px max(16px, env(safe-area-inset-left, 0px)); }
+    .bar .t { font-weight: 700; letter-spacing: .08em; font-size: 16px; margin-right: 6px; }
+    .bar .sp { flex: 1; }
+    .bar .src { font-size: 12px; color: var(--muted); }
+    .frame { flex: 1; min-height: 0; position: relative; background: #000; }
+    .frame iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+    .msg { position: absolute; inset: 0; display: grid; place-items: center; padding: 24px; background: var(--space); }
+    .card { width: min(620px, 100%); padding: 28px; border: 1px solid var(--edge-2); border-radius: 4px; background: var(--panel); display: flex; flex-direction: column; gap: 14px; }
+    .card h2 { margin: 0; font-size: 24px; letter-spacing: .05em; }
+    .card p { margin: 0; color: var(--ink-2); }
+    .card ol { margin: 0; padding-left: 20px; color: var(--ink-2); display: flex; flex-direction: column; gap: 4px; }
+    .card code { font-family: var(--f-mono); color: var(--ink); background: #ffffff0d; padding: 1px 6px; border-radius: 2px; }
+    .acts { display: flex; gap: 8px; flex-wrap: wrap; }
+    @media (max-width: 600px) { .chrome .name, .pill .lbl { display: none; } .count { min-width: 70px; font-size: 14px; } }
+  </style>
+</head>
+<body>
+
+  <!-- PDF: full-screen slideshow -->
+  <div class="show" id="show" hidden>
+    <div class="stage" id="stage"></div>
+    <div class="hit l" id="hitL" aria-hidden="true"></div>
+    <div class="hit r" id="hitR" aria-hidden="true"></div>
+    <div class="loading" id="loading"><span>Loading presentation…</span><i><b></b></i></div>
+
+    <div class="chrome top">
+      <a class="pill" href="/#presentation">‹ <span class="lbl">Menu</span></a>
+      <span class="title">PRESENTATION</span>
+      <span class="name" id="name"></span>
+      <span class="sp"></span>
+      <a class="pill" id="dl" href="/presentation/file?download"><span class="lbl">Download</span><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 4v11m0 0l-4-4m4 4l4-4M5 20h14"/></svg></a>
+    </div>
+    <div class="chrome bot">
+      <button class="ib" id="prev" aria-label="Previous slide">‹</button>
+      <span class="count" id="count" aria-live="polite">1 <small>/ 1</small></span>
+      <button class="ib" id="next" aria-label="Next slide">›</button>
+      <button class="ib" id="fs" aria-label="Full screen (F)" title="Full screen (F)">
+        <svg viewBox="0 0 24 24"><path id="fsi" d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>
+      </button>
+    </div>
+    <div class="progress"><i id="bar"></i></div>
+    <div class="hint" id="hint"><kbd>Enter</kbd> / <kbd>→</kbd> next &nbsp;·&nbsp; <kbd>Shift</kbd>+<kbd>Enter</kbd> / <kbd>←</kbd> back<br/><kbd>F</kbd> full screen &nbsp;·&nbsp; click or swipe</div>
+  </div>
+
+  <!-- Everything else -->
+  <div class="wrap" id="other" hidden>
+    <div class="bar">
+      <a class="btn" href="/#presentation">‹ Menu</a>
+      <span class="t">PRESENTATION</span>
+      <span class="src mono" id="src"></span>
+      <span class="sp"></span>
+      <a class="btn" id="full" hidden target="_blank" rel="noopener">Open in new tab ↗</a>
+      <a class="btn" id="odl" hidden>Download</a>
+      <a class="btn" id="up" hidden target="_blank" rel="noopener">Upload new version</a>
+      <a class="btn primary" href="/demo/">Live demo ›</a>
+    </div>
+    <div class="frame" id="frame">
+      <div class="msg" id="msg"><div class="card"><p class="mono">Loading presentation…</p></div></div>
+    </div>
+  </div>
+
+  <script type="module">
+    const $ = (id) => document.getElementById(id);
+    const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    let info;
+    try { info = await (await fetch("/presentation/info")).json(); }
+    catch { info = { kind: "error" }; }
+
+    if (info.kind === "pdf") slideshow(info); else other(info);
+
+    /* ================================================================ PDF slideshow */
+    async function slideshow(d) {
+      $("show").hidden = false;
+      $("name").textContent = d.name;
+      document.title = `PrF-G · ${d.name.replace(/\.pdf$/i, "")}`;
+
+      let pdf;
+      try {
+        const lib = await import("/vendor/pdfjs/pdf.min.js");
+        lib.GlobalWorkerOptions.workerSrc = "/vendor/pdfjs/pdf.worker.min.js";
+        const task = lib.getDocument({ url: d.file, cMapUrl: "/vendor/pdfjs/cmaps/", cMapPacked: true, standardFontDataUrl: "/vendor/pdfjs/standard_fonts/" });
+        task.onProgress = ({ loaded, total }) => { if (total) $("loading").style.setProperty("--pct", `${Math.round(loaded / total * 100)}%`); };
+        pdf = await task.promise;
+      } catch (e) {
+        console.warn(e);
+        $("loading").innerHTML = `<span>Could not load the slides.</span><a class="pill" href="${d.file}">Open the PDF instead</a>`;
+        return;
+      }
+      $("loading").remove();
+
+      const N = pdf.numPages, stage = $("stage");
+      let n = Math.min(N, Math.max(1, parseInt(location.hash.slice(1)) || 1));
+      const dpr = Math.min(devicePixelRatio || 1, 2.5);
+      const cache = new Map();
+      let cur = null, token = 0;
+
+      // Biggest box with the page's shape that fits the screen (small margin when not in full screen).
+      async function fit(i) {
+        const p = await pdf.getPage(i), v = p.getViewport({ scale: 1 });
+        const pad = document.fullscreenElement ? 0 : Math.min(innerWidth, innerHeight) * 0.035;
+        const s = Math.min((innerWidth - pad * 2) / v.width, (innerHeight - pad * 2) / v.height);
+        return { p, v, w: Math.floor(v.width * s), h: Math.floor(v.height * s) };
+      }
+      function render(i) {
+        const key = `${i}@${innerWidth}x${innerHeight}@${!!document.fullscreenElement}`;
+        if (!cache.has(key)) cache.set(key, (async () => {
+          const { p, v, w, h } = await fit(i);
+          const vp = p.getViewport({ scale: (w * dpr) / v.width });
+          const c = document.createElement("canvas");
+          c.width = Math.round(vp.width); c.height = Math.round(vp.height);
+          c.style.width = w + "px"; c.style.height = h + "px";
+          await p.render({ canvas: c, canvasContext: c.getContext("2d"), viewport: vp }).promise;
+          return c;
+        })());
+        return cache.get(key);
+      }
+
+      async function show(dir = 0) {
+        const my = ++token;
+        const src = await render(n);
+        if (my !== token) return; // a newer request won
+        const c = document.createElement("canvas");
+        c.width = src.width; c.height = src.height; c.style.cssText = src.style.cssText;
+        c.getContext("2d").drawImage(src, 0, 0);
+        c.className = "slide" + (dir && !reduce ? " enter" + (dir < 0 ? " back" : "") : "");
+        c.setAttribute("role", "img"); c.setAttribute("aria-label", `Slide ${n} of ${N}`);
+        if (cur) { const old = cur; if (dir && !reduce) { old.classList.add("leave"); setTimeout(() => old.remove(), 330); } else old.remove(); }
+        stage.appendChild(c); cur = c;
+        $("count").innerHTML = `${n} <small>/ ${N}</small>`;
+        $("prev").disabled = n === 1; $("next").disabled = n === N;
+        $("bar").style.width = `${(n / N) * 100}%`;
+        history.replaceState(null, "", `#${n}`);
+        for (const k of [n + 1, n + 2, n - 1]) if (k >= 1 && k <= N) render(k); // preload neighbours
+      }
+      const go = (d) => { const to = Math.max(1, Math.min(N, n + d)); if (to !== n) { n = to; show(d); } };
+      const jump = (to) => { to = Math.max(1, Math.min(N, to)); if (to !== n) { const d = to > n ? 1 : -1; n = to; show(d); } };
+
+      // Full screen
+      const toggleFs = () => document.fullscreenElement ? document.exitFullscreen() : $("show").requestFullscreen?.().catch(() => {});
+      document.addEventListener("fullscreenchange", () => {
+        $("fsi").setAttribute("d", document.fullscreenElement ? "M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5" : "M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5");
+        show(0);
+      });
+      if (!document.fullscreenEnabled) $("fs").hidden = true;
+
+      // Controls
+      $("prev").onclick = () => go(-1);
+      $("next").onclick = () => go(1);
+      $("fs").onclick = toggleFs;
+      $("hitL").onclick = () => go(-1);
+      $("hitR").onclick = () => go(1);
+      addEventListener("keydown", (e) => {
+        if (e.altKey || e.ctrlKey || e.metaKey) return;
+        if (e.key === "Enter" && e.target.closest("a, button")) return;
+        const k = e.key;
+        if ((k === "Enter" && e.shiftKey) || ["ArrowLeft", "ArrowUp", "PageUp", "Backspace"].includes(k)) { go(-1); e.preventDefault(); }
+        else if (["Enter", " ", "ArrowRight", "ArrowDown", "PageDown"].includes(k)) { go(1); e.preventDefault(); }
+        else if (k === "Home") { jump(1); e.preventDefault(); }
+        else if (k === "End") { jump(N); e.preventDefault(); }
+        else if (k === "f" || k === "F") { toggleFs(); e.preventDefault(); }
+        else if (/^[0-9]$/.test(k)) { /* type a number + Enter-less jump after a pause */ num += k; clearTimeout(numT); numT = setTimeout(() => { jump(parseInt(num)); num = ""; }, 600); }
+        wake();
+      });
+      let num = "", numT;
+
+      // Swipe
+      let x0 = null, y0 = null;
+      $("show").addEventListener("touchstart", (e) => { x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; }, { passive: true });
+      $("show").addEventListener("touchend", (e) => {
+        if (x0 === null) return;
+        const dx = e.changedTouches[0].clientX - x0, dy = e.changedTouches[0].clientY - y0; x0 = null;
+        if (Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy)) { go(dx < 0 ? 1 : -1); e.preventDefault(); }
+      });
+
+      // Controls fade out while presenting; any movement brings them back.
+      let idleT;
+      function wake() {
+        $("show").classList.remove("idle", "hide-cursor");
+        clearTimeout(idleT);
+        idleT = setTimeout(() => $("show").classList.add("idle", "hide-cursor"), 2600);
+      }
+      ["mousemove", "touchstart", "click"].forEach((ev) => addEventListener(ev, wake, { passive: true }));
+      wake();
+      setTimeout(() => $("hint").classList.add("gone"), 3600);
+
+      let rt; addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(() => { cache.clear(); show(0); }, 150); });
+      addEventListener("hashchange", () => jump(parseInt(location.hash.slice(1)) || 1));
+
+      show(0);
+    }
+
+    /* ================================================================ PPTX / link / nothing yet */
+    function other(d) {
+      $("other").hidden = false;
+      const show = (el, href) => { el.href = href; el.hidden = false; };
+      const frame = (src) => { const f = document.createElement("iframe"); f.src = src; f.allow = "fullscreen"; f.allowFullscreen = true; $("frame").replaceChildren(f); };
+      const message = (html) => { $("msg").firstElementChild.innerHTML = html; };
+      const embeddable = (url) => {
+        const g = url.match(/^https:\/\/docs\.google\.com\/presentation\/d\/(e\/)?([\w-]+)/);
+        if (g) return `https://docs.google.com/presentation/d/${g[1] ?? ""}${g[2]}/embed?start=false&loop=false`;
+        if (/canva\.com\/design\//.test(url) && !/[?&]embed/.test(url)) return url.split("?")[0].replace(/\/(edit|view)$/, "/view") + "?embed";
+        return url;
+      };
+      if (d.kind === "error") return message(`<h2>Presentation unavailable</h2><p>Could not reach the repository. Try again in a moment.</p><div class="acts"><a class="btn" href="/">‹ Back to menu</a></div>`);
+      show($("up"), d.uploadUrl);
+      if (d.kind === "pptx") {
+        $("src").textContent = `${d.dir}/${d.name}`;
+        const viewer = "https://view.officeapps.live.com/op/embed.aspx?src=" + encodeURIComponent(d.raw);
+        show($("full"), viewer); show($("odl"), d.file + "?download"); frame(viewer);
+      } else if (d.kind === "link") {
+        $("src").textContent = new URL(d.url).hostname;
+        show($("full"), d.url); frame(embeddable(d.url));
+      } else {
+        message(`
+          <h2>No presentation uploaded yet</h2>
+          <p>The site shows whatever is in the repo's <code>${d.dir}/</code> folder. Upload one of these and it appears here within a few minutes:</p>
+          <ol>
+            <li>any <code>.pdf</code> file, e.g. <code>${d.dir}/PrF-G.pdf</code> (best: full-screen slideshow)</li>
+            <li>any <code>.pptx</code> file (shown with the Office online viewer)</li>
+            <li><code>${d.dir}/link.txt</code> with a Google Slides or Canva share link on the first line</li>
+          </ol>
+          <div class="acts">
+            <a class="btn primary" href="${d.uploadUrl}" target="_blank" rel="noopener">Upload to the repo ↗</a>
+            <a class="btn" href="${d.folderUrl}" target="_blank" rel="noopener">Open folder on GitHub</a>
+          </div>`);
+      }
+    }
+  </script>
+</body>
+</html>

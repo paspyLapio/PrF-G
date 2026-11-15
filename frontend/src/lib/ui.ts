@@ -17,3 +17,6 @@ export const LOG_C: Record<string, string> = { caution: "var(--bad)", advisory: 
 
 export const f1 = (x: number) => x.toFixed(1);
 export const sign = (x: number, d = 1) => (x >= 0 ? "+" : "−") + Math.abs(x).toFixed(d);
+
+/** Main-menu URL. Set by the Cloudflare Worker build (.env.worker); empty elsewhere, so no menu button shows. */
+export const MENU_URL: string = (import.meta.env.VITE_MENU_URL as string | undefined) ?? "";

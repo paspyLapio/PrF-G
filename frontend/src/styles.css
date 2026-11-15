@@ -256,3 +256,4 @@ details.adv summary::-webkit-details-marker { display: none; }
 .status .word, .ring .st, .icard h1 { letter-spacing: 0.06em; text-transform: uppercase; }
 @media (max-width: 1000px) { .presets { grid-template-columns: repeat(2, minmax(0, 1fr)); } .firebar { flex-wrap: wrap; } }
 @media (max-width: 560px) { .presets { grid-template-columns: 1fr; } .lrow { grid-template-columns: 1fr; } }
+.menulink{display:inline-flex;align-items:center;text-decoration:none;color:inherit}

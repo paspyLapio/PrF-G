@@ -1,0 +1,31 @@
+// Cloudflare Worker config for the PrF-G site (menu, presentation, live demo).
+// Lives at the repo root so Cloudflare Workers Builds works with its default settings (root "/", deploy "npx wrangler deploy").
+// Manual deploy: cd frontend && npx wrangler login && npm run deploy  ->  https://prf-g.<your-subdomain>.workers.dev
+{
+  "name": "prf-g",
+  "main": "frontend/worker/index.ts",
+  // Builds the menu, presentation page and demo into frontend/dist before every deploy (installs deps if missing).
+  "build": { "command": "(test -d node_modules || npm ci --no-audit --no-fund) && npm run build:worker", "cwd": "frontend" },
+  "compatibility_date": "2026-11-01",
+  "workers_dev": true,
+  "assets": {
+    // frontend/dist = frontend/site/ (menu + presentation page) + dist/demo/ (the simulation), built by the build command above.
+    "directory": "./frontend/dist",
+    "binding": "ASSETS",
+    "not_found_handling": "404-page",
+    // Only these paths run the Worker script; everything else is served from dist/ directly.
+    "run_worker_first": ["/api", "/api/*", "/repo", "/presentation/info", "/presentation/file"]
+  },
+  "vars": {
+    // FastAPI backend (api/). Set to "" to run the demo on the on-board engine only.
+    "BACKEND_URL": "https://prf-g-api.onrender.com",
+    "BACKEND_TIMEOUT_MS": "8000",
+    // Where the presentation and the Repository button point. The repo must be public.
+    "GITHUB_REPO": "paspyLapio/PrF-G",
+    "GITHUB_BRANCH": "main",
+    "PRESENTATION_DIR": "presentation",
+    // Optional: exact file name to show. Empty = pick automatically (any .pdf, else .pptx, else link.txt).
+    "PRESENTATION_FILE": ""
+  },
+  "observability": { "enabled": true }
+}

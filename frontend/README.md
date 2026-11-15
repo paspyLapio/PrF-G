@@ -11,6 +11,41 @@ VITE_API_URL=http://localhost:8000 npm run dev  # live backend (run api/ first)
 npm run build                                 # -> dist/ (static, any host)
 ```
 
+## Deploy to Cloudflare Workers (workers.dev)
+
+The whole site runs as one Cloudflare Worker:
+
+| Path | What it serves |
+| --- | --- |
+| `/` | Main menu with three buttons: Presentation, Repository, Live demo (`site/index.html`). |
+| `/presentation/` | The deck, read live from the repo's `presentation/` folder (see `presentation/README.md`). Uploading a new file to the repo updates the site without a redeploy. |
+| `/repo` | Redirect to the GitHub repository (`GITHUB_REPO`). |
+| `/demo/` | The simulation (this Vite app). |
+| `/api/*` | Forwarded to the FastAPI backend, so the browser only talks to one origin (no CORS). |
+
+```bash
+cd frontend
+npm install
+npx wrangler login        # once, opens the browser
+npm run deploy            # builds with VITE_API_URL=/api, then wrangler deploy
+# -> https://prf-g.<your-subdomain>.workers.dev
+npm run dev:worker        # same thing locally at http://localhost:8787
+```
+
+- **Backend URL**: `BACKEND_URL` in the root `wrangler.jsonc` (default `https://prf-g-api.onrender.com`). Set it to `""` to
+  run on the on-board engine only. Change it without redeploying code under Worker → Settings → Variables.
+- **Sleeping backend**: if the backend takes longer than `BACKEND_TIMEOUT_MS` (8 s) the Worker answers 503 and the app
+  switches to its on-board engine, as it does with no backend. Open the backend's `/docs` a minute before presenting.
+- **Auto-deploy from GitHub**: the repo is connected to Cloudflare Workers Builds. With the default settings (root
+  directory `/`, no build command, deploy command `npx wrangler deploy`) every push to `main` builds and deploys the
+  site; the build runs from `build.command` in the root `wrangler.jsonc`.
+- **Presentation**: put `presentation.pdf` (or `presentation.pptx`, or `link.txt` with a Google Slides/Canva link)
+  in the repo's `presentation/` folder. The repo must stay public; change `GITHUB_REPO`, `GITHUB_BRANCH`,
+  `PRESENTATION_DIR` in `wrangler.jsonc` if it moves.
+- Files: `../wrangler.jsonc` (config, at the repo root), `worker/index.ts` (routes, presentation, `/api` proxy), `site/` (menu and
+  presentation pages), `.env.worker` (build mode `worker`: demo goes to `dist/demo`, `site/` is copied around it).
+  `npm run build` without `--mode worker` is unchanged, so the Render static site keeps working.
+
 ## How it is built
 
 | File | Role |

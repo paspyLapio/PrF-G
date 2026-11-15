@@ -64,6 +64,10 @@ cd api && pip install -r requirements.txt && uvicorn app.main:app --reload   # h
 python3 test_api.py http://localhost:8000                                   # 46 checks
 ```
 
+Deploy the site to Cloudflare Workers: `cd frontend && npx wrangler login && npm run deploy` -> `https://prf-g.<subdomain>.workers.dev`
+(main menu with Presentation / Repository / Live demo; proxies `/api/*` to the backend; details in `frontend/README.md`).
+The presentation is read live from `presentation/` in this repo: upload `presentation.pdf` there and the site shows it.
+
 Deploy: render.com -> New -> Blueprint -> select this repo (`render.yaml` builds `api/` and the static `frontend/`). The free plan sleeps after
 about 15 minutes idle, so open `/docs` a minute before presenting.
 

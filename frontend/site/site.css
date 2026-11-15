@@ -1,0 +1,29 @@
+/* Shared styles for the menu and presentation pages (same palette and type as the demo). */
+:root {
+  color-scheme: dark;
+  --space: #050607; --panel: #0a0d10; --panel-2: #0e1216; --edge: #1f262d; --edge-2: #2e3841;
+  --ink: #e8ecef; --ink-2: #a7b1ba; --muted: #6c7782; --accent: #ff7a1a; --accent-soft: rgba(255, 122, 26, .1);
+  --f-display: "Chakra Petch", "Arial Narrow", system-ui, sans-serif;
+  --f-mono: "Share Tech Mono", ui-monospace, Menlo, monospace;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; min-height: 100%; background: var(--space); color: var(--ink); }
+body {
+  font-family: var(--f-display); font-size: 15px; line-height: 1.5; -webkit-font-smoothing: antialiased;
+  background:
+    radial-gradient(1200px 600px at 85% -10%, rgba(255, 122, 26, .07), transparent 60%),
+    radial-gradient(900px 500px at -10% 110%, rgba(106, 166, 255, .05), transparent 60%),
+    var(--space);
+}
+a { color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.eyebrow { font-weight: 600; font-size: 12px; letter-spacing: .18em; text-transform: uppercase; color: var(--muted); }
+.mono { font-family: var(--f-mono); }
+
+.btn {
+  display: inline-flex; align-items: center; gap: 8px; height: 38px; padding: 0 14px; border-radius: 4px;
+  border: 1px solid var(--edge-2); background: var(--panel-2); font: 600 13.5px var(--f-display);
+  color: var(--ink); text-decoration: none; white-space: nowrap; cursor: pointer;
+}
+.btn:hover { border-color: var(--accent); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: #140800; }
