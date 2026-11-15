@@ -6,20 +6,6 @@ import type { Cabin, Item, Status } from "./engine";
 
 export const API_URL: string = (import.meta.env.VITE_API_URL as string | undefined)?.replace(/\/$/, "") ?? "";
 
-/** An AbortSignal that fires after ms, or when the caller's own signal fires. */
-export function timeoutSignal(ms: number, outer?: AbortSignal): { signal: AbortSignal; done: () => void } {
-  const ctl = new AbortController(), t = setTimeout(() => ctl.abort(), ms);
-  const stop = () => ctl.abort(); outer?.addEventListener("abort", stop);
-  return { signal: ctl.signal, done: () => { clearTimeout(t); outer?.removeEventListener("abort", stop); } };
-}
-
-/** Wake the backend. A free Render instance sleeps after ~15 min idle and takes 30-60 s to start, so allow 75 s. */
-export async function wake(): Promise<boolean> {
-  const { signal, done } = timeoutSignal(75000);
-  try { const r = await fetch(`${API_URL}/health`, { signal, cache: "no-store" }); return r.ok; }
-  catch { return false; } finally { done(); }
-}
-
 export interface BackendView {
   status: Status; pct: number; head: number | null; weakest: string | null; reasons: string[];
   materials: { key: string; state: string; detail: string; runs: string[] }[]; spread: number | null;
@@ -56,11 +42,10 @@ export async function fetchStatus(cabin: Cabin, design: number, g: number, inv: 
 
 export async function ask(question: string, cabin: Cabin, design: number, g: number, inv: Item[]): Promise<{ answer: string; runs: string[] }> {
   const exposed = inv.filter((i) => i.exposed);
-  const { signal, done } = timeoutSignal(10000);
   const r = await fetch(`${API_URL}/ask`, {
-    method: "POST", headers: { "Content-Type": "application/json" }, signal,
+    method: "POST", headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ question, current: { o2_pct: cabin.o2, pressure_psi: cabin.psia, flow_cm_s: cabin.u, gravity_g: g, design_o2_pct: design, materials: exposed.map((i) => i.key) } }),
-  }).finally(done);
+  });
   if (!r.ok) throw new Error(`API ${r.status}`);
   const d = (await r.json()) as { answer: string; cited_run_ids: string[] };
   return { answer: d.answer, runs: d.cited_run_ids ?? [] };
