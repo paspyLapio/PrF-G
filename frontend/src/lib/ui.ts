@@ -2,8 +2,8 @@ import type { MatStateKind, Status } from "./engine";
 
 export const SC: Record<Status, string> = { STANDBY: "var(--stby)", NOMINAL: "var(--ok)", REDUCED: "var(--warn)", UNVERIFIED: "var(--unk)", LOW: "var(--bad)" };
 /** Raw hex for canvas drawing (canvas cannot read CSS variables cheaply every frame). */
-export const SC_HEX: Record<Status, string> = { STANDBY: "#8ea3b8", NOMINAL: "#4fd6a0", REDUCED: "#f5b84a", UNVERIFIED: "#a99cf5", LOW: "#ff6b5d" };
-export const MC: Record<MatStateKind, string> = { ok: "var(--ok)", near: "var(--cyan)", unk: "var(--unk)", smoke: "var(--stby)" };
+export const SC_HEX: Record<Status, string> = { STANDBY: "#7f8b96", NOMINAL: "#3ad07c", REDUCED: "#ffc233", UNVERIFIED: "#6aa6ff", LOW: "#ff4545" };
+export const MC: Record<MatStateKind, string> = { ok: "var(--ok)", near: "#9ad6b0", unk: "var(--unk)", smoke: "var(--stby)" };
 
 export const STATUS_LEAD: Record<Status, string> = {
   STANDBY: "Launch phase. Screening starts in orbit.",

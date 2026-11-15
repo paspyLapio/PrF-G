@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useReducer, useRef, useState } from "react";
 import { Sky } from "./components/Sky";
-import { Header, Rail, Ring, Timeline, ToastBar } from "./components/Hud";
+import { FireBanner, Header, Rail, Ring, Timeline, ToastBar } from "./components/Hud";
+import { LossReport } from "./components/LossReport";
 import { Dashboard } from "./components/Dashboard";
 import { Launch } from "./components/Launch";
 import { PRESETS, type Mission } from "./lib/mission";
@@ -26,6 +27,11 @@ export default function App() {
       if (voiceRef.current && "speechSynthesis" in window) {
         try { const u = new SpeechSynthesisUtterance(`PrF-G ${lvl.toLowerCase()}. ${text}`); u.rate = 1.02; speechSynthesis.cancel(); speechSynthesis.speak(u); } catch { /* speech unavailable */ }
       }
+    };
+    sim.onFire = (stage) => {
+      const say = stage === "detected" ? "Fire. Fire. Vehicle smoke alarm." : stage === "lost" ? "Signal lost." : null;
+      if (stage === "detected" || stage === "lost") setDash(false);
+      if (say && voiceRef.current && "speechSynthesis" in window) { try { speechSynthesis.cancel(); speechSynthesis.speak(new SpeechSynthesisUtterance(say)); } catch { /* speech unavailable */ } }
     };
   }, [sim]);
 
@@ -55,6 +61,7 @@ export default function App() {
   }, [launched, sim]);
 
   const launch = (m: Mission) => { sim.reset(m); sim.running = true; setLaunched(true); setDash(false); };
+  const replay = () => { sim.reset(sim.mission); sim.running = true; setDash(false); };
   const restart = () => { sim.running = false; setDash(false); setLaunched(false); sim.emit(); };
 
   return (
@@ -68,6 +75,8 @@ export default function App() {
         <Timeline sim={sim} voice={voice} setVoice={setVoice} onRestart={restart} />
       </div>
       {launched && !dash && <ToastBar sim={sim} onOpen={open} />}
+      {launched && !sim.lost && <FireBanner sim={sim} />}
+      {launched && sim.lost && <LossReport sim={sim} onReplay={replay} onNew={restart} />}
       {dash && <Dashboard sim={sim} onClose={close} />}
       {!launched && <Launch onLaunch={launch} />}
     </div>

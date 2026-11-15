@@ -3,10 +3,9 @@ import { MATS, evaluate, type Item } from "../lib/engine";
 import { PRESETS, type AtmKey, type Mission } from "../lib/mission";
 import { SC, f1 } from "../lib/ui";
 
-const clone = (m: Mission): Mission => structuredClone({ name: m.name, u: m.u, band: m.band, trendMin: m.trendMin, det: m.det, atm: m.atm, inv: m.inv });
-const CHECKS: { label: string; atm: AtmKey; g: "micro" | "lunar" }[] = [
-  { label: "Earth orbit", atm: "launch", g: "micro" }, { label: "Translunar", atm: "transit", g: "micro" }, { label: "Surface", atm: "surface", g: "lunar" },
-];
+const clone = (m: Mission): Mission => structuredClone(m);
+/** Pre-flight check: every screened phase of this route (microgravity or partial gravity) at its design point. */
+const checks = (m: Mission) => m.route.filter((p) => p.g !== "1g" && p.shape !== "dorbit").map((p) => ({ label: p.name, atm: p.atm, g: p.g }));
 
 export function Launch({ onLaunch }: { onLaunch: (m: Mission) => void }) {
   const [preset, setPreset] = useState("lunar");
@@ -15,7 +14,7 @@ export function Launch({ onLaunch }: { onLaunch: (m: Mission) => void }) {
   const set = (f: (d: Mission) => void) => setM((p) => { const d = structuredClone(p); f(d); return d; });
   const setItem = (i: number, f: (it: Item) => void) => set((d) => f(d.inv[i]));
 
-  const pre = useMemo(() => CHECKS.map((c) => {
+  const pre = useMemo(() => checks(m).map((c) => {
     const d = m.atm[c.atm], e = evaluate(m.inv, { o2: d.o2, psia: d.psia, u: m.u }, d, c.g, m.band);
     return { ...c, e, d };
   }), [m]);
@@ -68,6 +67,8 @@ export function Launch({ onLaunch }: { onLaunch: (m: Mission) => void }) {
                 <div className="fld"><label htmlFor="u">Cabin airflow, cm/s</label><input id="u" type="number" step="0.5" min="0" max="40" value={m.u} onChange={(e) => set((d) => { d.u = +e.target.value; })} /></div>
                 <div className="fld"><label htmlFor="band">Caution point: O₂ band above design, points</label><input id="band" type="number" step="0.1" min="0" max="5" value={m.band} onChange={(e) => set((d) => { d.band = +e.target.value; })} /></div>
                 <div className="fld"><label htmlFor="tw">O₂ trend window, simulated minutes</label><input id="tw" type="number" step="1" min="2" max="30" value={m.trendMin} onChange={(e) => set((d) => { d.trendMin = +e.target.value; })} /></div>
+                <div className="fld"><label htmlFor="vol">Cabin free volume, m³ (Orion 9.3, ISS 388: NASA)</label><input id="vol" type="number" step="0.1" min="1" max="2000" value={m.volume} onChange={(e) => set((d) => { d.volume = +e.target.value; })} /></div>
+                <div className="fld"><label htmlFor="burst">Cabin structural limit, psia (Apollo 204 ruptured at ≥29)</label><input id="burst" type="number" step="0.5" min="5" max="60" value={m.burst} onChange={(e) => set((d) => { d.burst = +e.target.value; })} /></div>
                 <div className="fld"><label htmlFor="det">Smoke detectors during dust work</label>
                   <select id="det" value={m.det} onChange={(e) => set((d) => { d.det = e.target.value as Mission["det"]; })}><option value="inhibit">Inhibited (ISS practice)</option><option value="always">Always armed</option></select></div>
               </div>
@@ -92,7 +93,7 @@ export function Launch({ onLaunch }: { onLaunch: (m: Mission) => void }) {
         </details>
 
         <div className="go">
-          <span className="muted" style={{ fontSize: 13 }}>About 90 seconds from T−1 min to the lunar surface. Press D for the dashboard, Space to pause.</span>
+          <span className="muted" style={{ fontSize: 13 }}>About 90 seconds from launch to arrival. Press D for the dashboard, Space to pause.</span>
           <button className="btn primary big" onClick={() => onLaunch({ ...m, name: m.name })}>Launch</button>
         </div>
       </div>

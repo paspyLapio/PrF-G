@@ -90,21 +90,25 @@ def assess(o2_pct: float, pressure_psi: float, flow_cm_s: float, gravity_g: floa
         t = tpl.get(fam)
         if t is None:
             out.append({"material": key, "family": None, "in_domain": False, "scores": None, "predicted": None,
-                        "issues": ["no training data for this material"]})
+                        "untested": True, "issues": ["no training data for this material"]})
             continue
         rec = {**{c: t.get(c) for c in NUMERIC + CATEGORICAL if c in t}, **CONSTANT_IN_TRAINING,
                "o2_initial_pct": o2_pct, "pressure_kpa": pressure_psi * KPA_PER_PSI, "flow_cms": flow_cm_s}
         if fam == "pmma" and pmma_thickness_mm:
             rec["thickness_mm"] = pmma_thickness_mm
             rec["heated_thickness_mm"] = pmma_thickness_mm / 2 if pmma_sides == "two" else pmma_thickness_mm
-        p = _forward(_vector(rec, pre), s["w"])
         issues = _domain(rec, pre, gravity_g)
+        if issues:  # no number where there is no evidence: withhold the score, say "untested"
+            out.append({"material": key, "family": fam, "training_rows": t.get("n_training_rows"),
+                        "scores": None, "predicted": None, "in_domain": False, "untested": True, "issues": issues})
+            continue
+        p = _forward(_vector(rec, pre), s["w"])
         out.append({"material": key, "family": fam, "training_rows": t.get("n_training_rows"),
                     "scores": {c: round(float(v), 3) for c, v in zip(classes, p)},
-                    "predicted": classes[int(np.argmax(p))], "in_domain": not issues, "issues": issues})
+                    "predicted": classes[int(np.argmax(p))], "in_domain": True, "untested": False, "issues": []})
     return {
         "model": "P3 MLP: sustained burning yes/no (16 hidden units, trained on NASA runs, grouped CV)",
         "target": "sustained", "classes": classes, "per_material": out,
         "firewall": "Second opinion only. Never changes status, alerts or crew options.",
-        "note": "Scores are uncalibrated softmax outputs, not fire probabilities. Outside the training domain they are shown but flagged.",
+        "note": "Scores are uncalibrated softmax outputs, not fire probabilities. Outside the training domain no score is shown (untested).",
     }

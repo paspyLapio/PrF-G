@@ -2,7 +2,7 @@
  * Live connection to the PrF-G FastAPI backend (api/). The base URL comes from VITE_API_URL at build time.
  * If the API is missing or unreachable, the app keeps working on its built-in copy of the same engine.
  */
-import type { Cabin, Gravity, Item, Status } from "./engine";
+import type { Cabin, Item, Status } from "./engine";
 
 export const API_URL: string = (import.meta.env.VITE_API_URL as string | undefined)?.replace(/\/$/, "") ?? "";
 
@@ -16,20 +16,20 @@ interface IndexResponse {
   predicted_spread: { spread_mm_s: number } | null;
 }
 
-const gravityG = (g: Gravity) => (g === "micro" ? 0 : g === "lunar" ? 0.166 : 1);
 
-function params(cabin: Cabin, design: number, g: Gravity, inv: Item[]) {
+/** g is the gravity level in g (0 = microgravity, 0.166 Moon, 0.38 Mars, 1 Earth). */
+function params(cabin: Cabin, design: number, g: number, inv: Item[]) {
   const exposed = inv.filter((i) => i.exposed);
   const pmma = exposed.find((i) => i.key === "pmma");
   const q = new URLSearchParams({
-    o2_pct: cabin.o2.toFixed(2), pressure_psi: cabin.psia.toFixed(3), flow_cm_s: cabin.u.toFixed(2), gravity_g: String(gravityG(g)),
+    o2_pct: cabin.o2.toFixed(2), pressure_psi: cabin.psia.toFixed(3), flow_cm_s: cabin.u.toFixed(2), gravity_g: String(g),
     design_o2_pct: String(design), materials: exposed.map((i) => i.key).join(","),
   });
   if (pmma?.t) { q.set("pmma_thickness_mm", String(pmma.t)); q.set("pmma_sides", pmma.sides ?? "one"); }
   return q;
 }
 
-export async function fetchStatus(cabin: Cabin, design: number, g: Gravity, inv: Item[], signal?: AbortSignal): Promise<BackendView> {
+export async function fetchStatus(cabin: Cabin, design: number, g: number, inv: Item[], signal?: AbortSignal): Promise<BackendView> {
   const r = await fetch(`${API_URL}/index?${params(cabin, design, g, inv)}`, { signal });
   if (!r.ok) throw new Error(`API ${r.status}`);
   const d = (await r.json()) as IndexResponse;
@@ -40,11 +40,11 @@ export async function fetchStatus(cabin: Cabin, design: number, g: Gravity, inv:
   };
 }
 
-export async function ask(question: string, cabin: Cabin, design: number, g: Gravity, inv: Item[]): Promise<{ answer: string; runs: string[] }> {
+export async function ask(question: string, cabin: Cabin, design: number, g: number, inv: Item[]): Promise<{ answer: string; runs: string[] }> {
   const exposed = inv.filter((i) => i.exposed);
   const r = await fetch(`${API_URL}/ask`, {
     method: "POST", headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ question, current: { o2_pct: cabin.o2, pressure_psi: cabin.psia, flow_cm_s: cabin.u, gravity_g: gravityG(g), design_o2_pct: design, materials: exposed.map((i) => i.key) } }),
+    body: JSON.stringify({ question, current: { o2_pct: cabin.o2, pressure_psi: cabin.psia, flow_cm_s: cabin.u, gravity_g: g, design_o2_pct: design, materials: exposed.map((i) => i.key) } }),
   });
   if (!r.ok) throw new Error(`API ${r.status}`);
   const d = (await r.json()) as { answer: string; cited_run_ids: string[] };
@@ -52,9 +52,9 @@ export async function ask(question: string, cabin: Cabin, design: number, g: Gra
 }
 
 /** P3's neural network (GET /mlp): a second opinion, read only by the dashboard's Neural network tab. */
-export interface MLPRow { material: string; family: string | null; training_rows?: number; scores: Record<string, number> | null; predicted: string | null; in_domain: boolean; issues: string[] }
+export interface MLPRow { material: string; family: string | null; training_rows?: number; scores: Record<string, number> | null; predicted: string | null; in_domain: boolean; untested?: boolean; issues: string[] }
 export interface MLPResult { model: string; per_material: MLPRow[]; firewall: string; note: string }
-export async function fetchMLP(cabin: Cabin, g: Gravity, inv: Item[], signal?: AbortSignal): Promise<MLPResult> {
+export async function fetchMLP(cabin: Cabin, g: number, inv: Item[], signal?: AbortSignal): Promise<MLPResult> {
   const r = await fetch(`${API_URL}/mlp?${params(cabin, 0, g, inv)}`, { signal });
   if (!r.ok) throw new Error(`API ${r.status}`);
   return (await r.json()) as MLPResult;
