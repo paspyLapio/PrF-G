@@ -1,7 +1,7 @@
 # Fire Margin API v0.3 (real data, v0.2 evidence model)
 
 Run locally: `pip install -r requirements.txt && uvicorn app.main:app --reload` -> http://localhost:8000/docs
-Smoke test: `python3 test_api.py <base-url>` (42 checks).
+Smoke test: `python3 test_api.py <base-url>` (46 checks).
 
 | Endpoint | Use |
 |---|---|
@@ -12,6 +12,7 @@ Smoke test: `python3 test_api.py <base-url>` (42 checks).
 | POST /whatif {current:{...}} | options A/B/C, all `requires_human_approval` |
 | POST /whatif/decision {option_id, decision, crew_member} | human approve/reject, audit-logged |
 | GET /rank?preset=lunar[&material=] | ranked investigations + O2 envelope per material |
+| GET /mlp?o2_pct=21&pressure_psi=14.7&flow_cm_s=10&gravity_g=0&materials=pmma,silicone | P3 neural network, per material: sustained-burning scores (uncalibrated), training-domain flags. Firewalled: never changes /index |
 | GET /explain?o2_pct=36&from_o2_pct=34 | SI layer: plain-language "why", every sentence cites run_ids |
 | GET /procedures, /procedures/active?..., /procedures/{id} | SIMULATED crew checklists picked by band (untested / tight / critical); shown, never run |
 | POST /procedures/{id}/steps/{step} {crew_member, action: confirm or skip} | human confirms a step; audit-logged |
