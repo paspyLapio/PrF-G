@@ -213,6 +213,7 @@
       if (anim) wrap.animate([{ transform: `translateX(${dir * 48}px)`, opacity: 0 }, { transform: "none", opacity: 1 }], { duration: 240, easing: "cubic-bezier(.2,.7,.1,1)" });
       s1.setAttribute("aria-label", `Slide ${n} of ${N}`);
       pg.textContent = `${n} / ${N}`; prev.disabled = n === 1; next.disabled = n === N;
+      $("#deckctl .full").href = `/presentation/#${n}`; // full screen opens on this slide
       busy = false;
       put(s2, n + 1, w); put(s3, n + 2, w);
       if (n + 3 <= N) page(n + 3, w); // warm the next one
@@ -434,6 +435,7 @@
       if (anim) wrap.animate([{ transform: `translateX(${dir * 48}px)`, opacity: 0 }, { transform: "none", opacity: 1 }], { duration: 240, easing: "cubic-bezier(.2,.7,.1,1)" });
       s1.setAttribute("aria-label", `Slide ${n} of ${N}`);
       pg.textContent = `${n} / ${N}`; prev.disabled = n === 1; next.disabled = n === N;
+      $("#deckctl .full").href = `/presentation/#${n}`; // full screen opens on this slide
       busy = false;
       put(s2, n + 1, w); put(s3, n + 2, w);
       if (n + 3 <= N) page(n + 3, w); // warm the next one
