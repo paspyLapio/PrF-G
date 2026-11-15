@@ -11,3 +11,14 @@ services:
     envVars:
       - key: PYTHON_VERSION
         value: 3.12.7
+
+  # React front end (static site). Set VITE_API_URL to the prf-g-api URL shown in the Render dashboard.
+  - type: web
+    name: prf-g-app
+    runtime: static
+    rootDir: frontend
+    buildCommand: npm ci && npm run build
+    staticPublishPath: dist
+    envVars:
+      - key: VITE_API_URL
+        value: https://prf-g-api.onrender.com

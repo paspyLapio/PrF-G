@@ -8,7 +8,39 @@
    gives no number outside its training range. Both models reach the same accuracy (about x1.25).
 3. **Advisory, crew decides.** PrF-G never changes the cabin. Options show their projected effect; a crew member approves
    or declines, and every decision is logged.
-4. **Existing telemetry stays unchanged.** PrF-G adds a layer on top of the cabin displays and alarms; it raises only
-   advisory and caution alerts, and only when the status worsens. It does not detect fires.
+4. **Existing telemetry stays unchanged.** PrF-G adds a decision-support layer on top of the cabin displays and the
+   vehicle's caution and warning system. It does not detect fires and never triggers an automatic vehicle action.
 5. **Branch 1 (scientist evidence explorer) was dropped.** It did not offer more than long-term research already does.
    Its templates are in `archive/branch1/`.
+6. **Alert rules (team Task 3).** Evidence status and alert level are separate. The mapping is a PrF-G product rule,
+   not a NASA classification. PrF-G never uses Warning or Emergency:
+
+   | Status | Alert | Crew-facing meaning |
+   | --- | --- | --- |
+   | NOMINAL | none | Conditions are inside the evaluated evidence |
+   | REDUCED | Advisory | Conditions changed; the evidence shows a reduced margin |
+   | UNVERIFIED | Advisory | Current conditions are outside the available NASA test evidence |
+   | LOW | Caution | The defined critical criteria are met: O2 outside the reference band, or above the design band with under 50% coverage |
+
+   - A notice is created only when the status changes, never on every telemetry update. Priority follows the alert
+     level, so REDUCED and UNVERIFIED are the same priority. UNVERIFIED means "not enough evidence", not "more dangerous".
+   - Worsening is shown immediately. An improvement must hold for 1.5 s (demo time) before the status changes or a
+     notice clears, so sensor noise at a threshold cannot make alerts flicker.
+   - Each notice records what changed (cabin values), why (the rule that fired), the evidence context, the O2 trend
+     and how many crew options exist. Options are suggestions; the crew decides.
+   - Lifecycle: new, then acknowledged, then resolved, then kept in history. Acknowledging never clears an active notice.
+     A notice stays on screen until it is acknowledged. A recovery is announced with its reason.
+   - Lessons borrowed: distinct urgency levels (ISS), clear speech-capable messages with linked options (CLDP 2024),
+     priority ordering, acknowledgement and nuisance-alert suppression (14 CFR 25.1322, FAA human-factors guidance).
+     Not borrowed: automatic fire responses or alarm tones.
+7. **O2 trend projection (team Task 2).** A linear least-squares fit over the last 8 simulated minutes (by timestamp,
+   not a sample count; the window is set in mission setup and still needs validating against real update rates).
+   It projects two separate targets:
+   - the caution point (design O2 + band), which is a project setting and not a NASA limit;
+   - the tested-evidence edge (highest O2 with a NASA result for the weakest exposed material), which is not a fire threshold.
+
+   It shows "Already reached" instead of a negative time and "No upward crossing projected" when O2 is steady or
+   falling. A slope smaller than twice its standard error counts as steady. It shows "Projection unavailable" with
+   fewer than 5 readings, readings covering under half the window, or a newest reading older than 1 minute.
+   Checked against the six worked examples in the Task 2 report (8 / 33.6 min, reached / 8.8 min, 10 / 11 min,
+   reached / 18 s, and both falling cases).

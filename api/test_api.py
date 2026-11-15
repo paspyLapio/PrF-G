@@ -160,5 +160,19 @@ s, _ = call("POST", "/procedures/margin_tight/steps/t2", {"crew_member": "x", "a
 check("/procedures invalid action -> 422", s == 422)
 call("POST", "/procedures/reset")
 
+# P3 neural network overlay (firewalled second opinion)
+s, d = call("GET", "/mlp?o2_pct=21&pressure_psi=14.7&flow_cm_s=10&gravity_g=0&materials=pmma,kapton")
+pm = d["per_material"][0] if s == 200 else {}
+check("/mlp station air: PMMA scored, in training domain", s == 200 and pm.get("in_domain") is True
+      and abs(sum(pm["scores"].values()) - 1) < 0.01)
+check("/mlp untrained material -> no score", s == 200 and d["per_material"][1]["scores"] is None)
+s, d = call("GET", "/mlp?o2_pct=34&pressure_psi=8.2&gravity_g=0.166&materials=pmma")
+check("/mlp lunar surface flagged out of domain (O2, pressure, gravity)", s == 200
+      and not d["per_material"][0]["in_domain"] and len(d["per_material"][0]["issues"]) == 3)
+s1, a1 = call("GET", "/index?o2_pct=34&pressure_psi=8.2&gravity_g=0.166&materials=pmma")
+call("GET", "/mlp?o2_pct=34&materials=pmma")
+s2, a2 = call("GET", "/index?o2_pct=34&pressure_psi=8.2&gravity_g=0.166&materials=pmma")
+check("/mlp firewall: calling it never changes /index status", s1 == s2 == 200 and a1["status"] == a2["status"])
+
 print(f"\n{sum(results)}/{len(results)} checks passed")
 sys.exit(0 if all(results) else 1)

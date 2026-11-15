@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { GP_ERR, KPA, material } from "../lib/engine";
-import { API_URL, ask } from "../lib/api";
+import { API_URL, ask, fetchMLP, type MLPResult } from "../lib/api";
 import { nnModel, onNN, runNN } from "../lib/nn";
 import { fmtMET, fmtTrend, type Simulation, type View } from "../lib/sim";
 import { fmtEta, type Target } from "../lib/trend";
@@ -96,19 +96,55 @@ function AskTab({ sim }: { sim: Simulation }) {
 
 function NNTab({ sim }: { sim: Simulation }) {
   const [, force] = useState(0);
+  const [mlp, setMlp] = useState<MLPResult | null>(null);
+  const [err, setErr] = useState<string | null>(null);
   useEffect(() => onNN(() => force((x) => x + 1)), []);
+  // poll the backend MLP while this tab is open (it never feeds back into the simulation)
+  useEffect(() => {
+    if (!API_URL) return;
+    let alive = true, ctl: AbortController | null = null;
+    const tick = () => {
+      ctl?.abort(); ctl = new AbortController();
+      fetchMLP(sim.cabin, sim.phase.g, sim.inv, ctl.signal).then((r) => { if (alive) { setMlp(r); setErr(null); } })
+        .catch((e) => { if (alive && e.name !== "AbortError") setErr("Backend unreachable"); });
+    };
+    tick(); const id = setInterval(tick, 2000);
+    return () => { alive = false; clearInterval(id); ctl?.abort(); };
+  }, [sim]);
+
   const v = sim.view, m = nnModel(), pm = sim.inv.find((i) => i.exposed && i.key === "pmma");
   const x = { o2_pct: +v.cabin.o2.toFixed(2), pressure_kpa: +(v.cabin.psia * KPA).toFixed(1), flow_cm_s: +v.cabin.u.toFixed(1), gravity_g: v.g === "micro" ? 0 : v.g === "lunar" ? 0.166 : 1, thickness_mm: pm?.t ? (pm.sides === "two" ? pm.t / 2 : pm.t) : null };
   const out = runNN(x);
+  const rows = v.materials.map(({ item, s }) => ({ item, s, nn: mlp?.per_material.find((r) => r.material === item.key) }));
   return (
     <div className="ai">
       <div style={{ display: "flex", justifyContent: "space-between", gap: 8, flexWrap: "wrap", marginBottom: 8 }}>
-        <b>{m ? m.name : "MLP not connected"}</b><span className="fw">Second opinion · cannot change status, alerts or options</span>
+        <b>{mlp ? "P3 neural network · sustained burning yes/no" : m ? m.name : API_URL ? (err ?? "Connecting to the MLP…") : "MLP not connected"}</b>
+        <span className="fw">Second opinion · cannot change status, alerts or options</span>
       </div>
       <div className="nnrow"><span className="muted">Inputs</span><span className="mono" style={{ fontSize: 12 }}>O₂ {x.o2_pct}% · {x.pressure_kpa} kPa · {x.flow_cm_s} cm/s · {x.gravity_g} g{x.thickness_mm ? ` · ${x.thickness_mm} mm` : ""}</span></div>
-      <div className="nnrow"><span className="muted">Evidence engine (GP)</span><span className="mono">{v.spread != null ? `${v.spread.toFixed(3)} mm/s ×${GP_ERR.toFixed(2)}` : "outside model domain"}</span></div>
-      <div className="nnrow"><span className="muted">Neural network</span><span className="mono">{!out ? "awaiting model" : "error" in out ? "model error, ignored" : `${out.value != null ? out.value.toFixed(3) : out.label}${out.unit ? " " + out.unit : ""}`}</span></div>
-      {!m && <p className="muted" style={{ fontSize: 12.5, margin: "8px 0 0" }}>The team's MLP plugs in with <code className="mono">window.PrFG.connectMLP(name, fn)</code>. If the two disagree, the crew sees both, and the status still comes from NASA evidence.</p>}
+      {mlp ? (
+        <div className="tw" style={{ marginTop: 6 }}>
+          <table className="tbl nn">
+            <thead><tr><th>Material</th><th>Evidence engine (NASA tests)</th><th>Neural network: sustained burning</th><th>Training domain</th></tr></thead>
+            <tbody>{rows.map(({ item, s, nn }) => (
+              <tr key={item.label}>
+                <td>{item.label}</td>
+                <td><span style={{ color: MC[s.st] }}>{s.lab}</span></td>
+                <td className="mono">{!nn || !nn.scores ? <span className="muted">no training data</span>
+                  : <><span className="nnbar"><i style={{ width: `${nn.scores.yes * 100}%` }} /></span> {nn.predicted === "yes" ? "likely" : "unlikely"} · score {nn.scores.yes.toFixed(2)}</>}</td>
+                <td>{!nn || !nn.scores ? "—" : nn.in_domain ? <span style={{ color: "var(--ok)" }}>inside</span> : <span style={{ color: "var(--warn)" }} title={nn.issues.join("; ")}>outside: {nn.issues[0]}</span>}</td>
+              </tr>))}</tbody>
+          </table>
+          <p className="muted" style={{ fontSize: 12, margin: "8px 0 0" }}>{mlp.note} Where the two disagree, the crew sees both; the status still comes from the NASA evidence.</p>
+        </div>
+      ) : (
+        <>
+          <div className="nnrow"><span className="muted">Evidence engine (GP)</span><span className="mono">{v.spread != null ? `${v.spread.toFixed(3)} mm/s ×${GP_ERR.toFixed(2)}` : "outside model domain"}</span></div>
+          <div className="nnrow"><span className="muted">Neural network</span><span className="mono">{!out ? (API_URL ? (err ?? "loading") : "awaiting model") : "error" in out ? "model error, ignored" : `${out.value != null ? out.value.toFixed(3) : out.label}${out.unit ? " " + out.unit : ""}`}</span></div>
+          {!m && !API_URL && <p className="muted" style={{ fontSize: 12.5, margin: "8px 0 0" }}>Runs on the backend: build with <code className="mono">VITE_API_URL</code> set, or plug a local model in with <code className="mono">window.PrFG.connectMLP(name, fn)</code>.</p>}
+        </>
+      )}
     </div>
   );
 }

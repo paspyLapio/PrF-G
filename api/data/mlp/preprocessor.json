@@ -1,0 +1,140 @@
+{
+  "numeric_medians": {
+    "thickness_mm": 2.0,
+    "heated_thickness_mm": 1.0150000000000001,
+    "width_cm": 2.2,
+    "burning_sides": 0.0,
+    "areal_density_kg_m2": 2.38,
+    "o2_initial_pct": 20.8,
+    "pressure_kpa": 100.0,
+    "pressure_series_range_kpa": 0.0,
+    "flow_cms": 10.0,
+    "gravity": 0.0
+  },
+  "numeric_means": {
+    "thickness_mm": 2.555578947368421,
+    "heated_thickness_mm": 1.6879473684210524,
+    "width_cm": 5.757894736842106,
+    "burning_sides": 0.0,
+    "areal_density_kg_m2": 3.051377192982456,
+    "o2_initial_pct": 20.696491228070176,
+    "pressure_kpa": 97.20175438596492,
+    "pressure_series_range_kpa": 0.0,
+    "flow_cms": 12.807017543859649,
+    "gravity": 0.0
+  },
+  "numeric_stds": {
+    "thickness_mm": 2.156512372370807,
+    "heated_thickness_mm": 1.7028632690323056,
+    "width_cm": 10.904223346755936,
+    "burning_sides": 1.0,
+    "areal_density_kg_m2": 2.163455281915543,
+    "o2_initial_pct": 2.1777958366346932,
+    "pressure_kpa": 9.059152418199231,
+    "pressure_series_range_kpa": 1.0,
+    "flow_cms": 7.6259910980647225,
+    "gravity": 1.0
+  },
+  "numeric_min": {
+    "thickness_mm": 0.1,
+    "heated_thickness_mm": 0.1,
+    "width_cm": 1.0,
+    "burning_sides": 0.0,
+    "areal_density_kg_m2": 0.119,
+    "o2_initial_pct": 14.1,
+    "pressure_kpa": 70.3,
+    "pressure_series_range_kpa": 0.0,
+    "flow_cms": 2.0,
+    "gravity": 0.0
+  },
+  "numeric_max": {
+    "thickness_mm": 10.0,
+    "heated_thickness_mm": 10.0,
+    "width_cm": 41.0,
+    "burning_sides": 0.0,
+    "areal_density_kg_m2": 11.9,
+    "o2_initial_pct": 26.2,
+    "pressure_kpa": 103.0,
+    "pressure_series_range_kpa": 0.0,
+    "flow_cms": 30.0,
+    "gravity": 0.0
+  },
+  "category_columns": [
+    "material_Cotton jersey",
+    "material_Mylar G film",
+    "material_Nomex III fabric",
+    "material_PMMA",
+    "material_PMMA (1-sided)",
+    "material_PMMA (2-sided)",
+    "material_PMMA film",
+    "material_SIBAL cotton/fiberglass",
+    "material_Silicone",
+    "material_Structured PMMA",
+    "material_Ultem 1000 film",
+    "material_family_cotton_fabric",
+    "material_family_mylar_film",
+    "material_family_nomex_fabric",
+    "material_family_pmma",
+    "material_family_pmma_structured",
+    "material_family_sibal_fabric",
+    "material_family_silicone",
+    "material_family_ultem_film",
+    "geometry_class_slab",
+    "geometry_class_thick_block",
+    "geometry_class_thin_fabric",
+    "geometry_class_thin_film",
+    "o2_basis_UNKNOWN",
+    "o2_basis_estimate: mean of test initial and final O2 (per-segment O2 not reported)",
+    "o2_basis_reported value",
+    "pressure_source_not available",
+    "pressure_source_reported",
+    "pressure_source_same flight (inference)",
+    "flow_config_concurrent",
+    "flow_config_opposed"
+  ],
+  "category_values": {
+    "material": [
+      "Cotton jersey",
+      "Mylar G film",
+      "Nomex III fabric",
+      "PMMA",
+      "PMMA (1-sided)",
+      "PMMA (2-sided)",
+      "PMMA film",
+      "SIBAL cotton/fiberglass",
+      "Silicone",
+      "Structured PMMA",
+      "Ultem 1000 film"
+    ],
+    "material_family": [
+      "cotton_fabric",
+      "mylar_film",
+      "nomex_fabric",
+      "pmma",
+      "pmma_structured",
+      "sibal_fabric",
+      "silicone",
+      "ultem_film"
+    ],
+    "geometry_class": [
+      "slab",
+      "thick_block",
+      "thin_fabric",
+      "thin_film"
+    ],
+    "o2_basis": [
+      "UNKNOWN",
+      "estimate: mean of test initial and final O2 (per-segment O2 not reported)",
+      "reported value"
+    ],
+    "pressure_source": [
+      "not available",
+      "reported",
+      "same flight (inference)"
+    ],
+    "flow_config": [
+      "concurrent",
+      "opposed"
+    ]
+  }
+}

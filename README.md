@@ -29,10 +29,12 @@ flowchart LR
 
 | Path | What it is | Owner |
 | --- | --- | --- |
-| `app/` | Front end. `mission_template.html` (full-screen mission demo with the PrF-G dashboard) and `prfg_template.html` (single crew screen with mission setup). Built pages are generated next to them. | P4 |
-| `api/` | FastAPI backend: `/index`, `/evidence`, `/telemetry`, `/whatif`, `/explain`, `/ask`, `/procedures`, `/rank`. 42 automated checks in `test_api.py`. | P4 |
+| `frontend/` | **Demo app (React + TypeScript).** Full-screen simulated launch with the PrF-G dashboard; talks to `api/` and falls back to its on-board engine. See `frontend/README.md`. | P4 |
+| `app/` | Earlier HTML pages. `mission_template.html` (full-screen mission demo with the PrF-G dashboard) and `prfg_template.html` (single crew screen with mission setup). Built pages are generated next to them. | P4 |
+| `api/` | FastAPI backend: `/index`, `/evidence`, `/telemetry`, `/whatif`, `/explain`, `/ask`, `/procedures`, `/rank`. 46 automated checks in `test_api.py`. | P4 |
 | `data/` | The evidence base: run-level data, derived variables, materials, investigations, reference atmospheres, screening bands. `build_runs.py` rebuilds `runs.csv`. | P1 |
 | `models/gp/` | Fitted Gaussian process (39 BASS-II PMMA segments, held-out error about x1.25). | P2 |
+| `material_intelligence/` | P3's neural network (NumPy MLP, sustained burning yes/no) with training, grouped cross-validation and safe-format artifacts. `python3 tools/sync_mlp_artifacts.py` copies a newly trained model into the API. | P3 |
 | `models/mlp/` | Neural-network training set, baseline and the drop zone for P3's exported weights. | P3 |
 | `research/p2/` | P2's independent BASS-II transcription and first model. | P2 |
 | `docs/` | `STUDIES.md` (every NASA source and what it gives), `DECISIONS.md` (why the design is what it is). | P1 |
@@ -51,12 +53,18 @@ python3 tools/fill_backend_data.py api
 # 3. Build the app pages (data and GP are embedded; they open as plain HTML files)
 python3 tools/build_pages.py        # -> app/mission.html, app/crew_screen.html
 
-# 4. Run the backend
+# 4. Run the React demo app (optional: VITE_API_URL=http://localhost:8000 for the live backend)
+python3 tools/export_frontend_data.py && cd frontend && npm install && npm run dev && cd ..
+
+# 5. After retraining the MLP in material_intelligence/, copy it into the API
+python3 tools/sync_mlp_artifacts.py
+
+# 6. Run the backend
 cd api && pip install -r requirements.txt && uvicorn app.main:app --reload   # http://localhost:8000/docs
-python3 test_api.py http://localhost:8000                                   # 42 checks
+python3 test_api.py http://localhost:8000                                   # 46 checks
 ```
 
-Deploy: render.com -> New -> Blueprint -> select this repo (`render.yaml` builds `api/`). The free plan sleeps after
+Deploy: render.com -> New -> Blueprint -> select this repo (`render.yaml` builds `api/` and the static `frontend/`). The free plan sleeps after
 about 15 minutes idle, so open `/docs` a minute before presenting.
 
 ## Data status

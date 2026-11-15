@@ -50,3 +50,12 @@ export async function ask(question: string, cabin: Cabin, design: number, g: Gra
   const d = (await r.json()) as { answer: string; cited_run_ids: string[] };
   return { answer: d.answer, runs: d.cited_run_ids ?? [] };
 }
+
+/** P3's neural network (GET /mlp): a second opinion, read only by the dashboard's Neural network tab. */
+export interface MLPRow { material: string; family: string | null; training_rows?: number; scores: Record<string, number> | null; predicted: string | null; in_domain: boolean; issues: string[] }
+export interface MLPResult { model: string; per_material: MLPRow[]; firewall: string; note: string }
+export async function fetchMLP(cabin: Cabin, g: Gravity, inv: Item[], signal?: AbortSignal): Promise<MLPResult> {
+  const r = await fetch(`${API_URL}/mlp?${params(cabin, 0, g, inv)}`, { signal });
+  if (!r.ok) throw new Error(`API ${r.status}`);
+  return (await r.json()) as MLPResult;
+}

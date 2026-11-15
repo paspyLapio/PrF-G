@@ -8,3 +8,6 @@ venv/
 *.joblib
 *.pkl
 .env
+node_modules/
+frontend/dist/
+*.tsbuildinfo

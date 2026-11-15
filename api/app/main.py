@@ -6,7 +6,7 @@ from typing import Literal, Optional
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
-from . import model as M, explain as E, procedures as P
+from . import model as M, explain as E, procedures as P, mlp_overlay as NN
 
 app = FastAPI(title="Fire Margin API", version="0.3")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
@@ -61,6 +61,16 @@ def index(o2_pct: float = 34.0, pressure_psi: float = 8.2, flow_cm_s: float = 10
     return _index(Conditions(o2_pct=o2_pct, pressure_psi=pressure_psi, flow_cm_s=flow_cm_s, gravity_g=gravity_g,
                              flow_direction=flow_direction, pmma_thickness_mm=pmma_thickness_mm, pmma_sides=pmma_sides,
                              design_o2_pct=design_o2_pct, materials=[m for m in materials.split(",") if m]))
+
+
+@app.get("/mlp")  # P3's neural network: firewalled second opinion, never changes status/alerts/options
+def mlp(o2_pct: float = 34.0, pressure_psi: float = 8.2, flow_cm_s: float = 10.0, gravity_g: float = 0.166,
+        materials: str = "cotton_fabric,nomex_fabric,pmma,silicone", pmma_thickness_mm: float = 4.0,
+        pmma_sides: Literal["one", "two"] = "one"):
+    if not NN.available():
+        raise HTTPException(503, "MLP artifacts missing: run python3 tools/sync_mlp_artifacts.py")
+    return NN.assess(o2_pct, pressure_psi, flow_cm_s, gravity_g, [m for m in materials.split(",") if m],
+                     pmma_thickness_mm, pmma_sides)
 
 
 @app.get("/evidence")

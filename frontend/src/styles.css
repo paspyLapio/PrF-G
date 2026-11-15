@@ -228,3 +228,6 @@ details.adv summary::-webkit-details-marker { display: none; }
 .nrow { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 10px; align-items: center; font-size: 12.5px; padding: 8px 10px; border: 1px solid var(--edge); border-radius: 12px; }
 .nrow .w { font-size: 11px; color: var(--muted); }
 @media (max-width: 1000px) { .projp { grid-template-columns: 1fr; } .pcell { border-left: 0; border-top: 1px solid var(--edge); } .pcell:first-child { border-top: 0; } .nrow { grid-template-columns: 1fr; } }
+.tbl.nn td { vertical-align: top; font-size: 12.5px; }
+.nnbar { display: inline-block; width: 60px; height: 6px; border-radius: 3px; background: rgba(140, 180, 220, 0.16); overflow: hidden; vertical-align: middle; margin-right: 6px; }
+.nnbar i { display: block; height: 100%; background: var(--violet); }
