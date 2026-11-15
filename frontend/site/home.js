@@ -5,6 +5,21 @@
   const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
   const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 
+  /* ------------------------------------------------------------ Lenis smooth scrolling (off for reduced motion) */
+  const lenis = !reduce && window.Lenis
+    ? new window.Lenis({ autoRaf: true, lerp: 0.085, wheelMultiplier: 0.95, anchors: { offset: 0, duration: 1.6 } })
+    : null;
+  window.lenis = lenis; // handy for debugging in the console
+
+  // Hero parallax: title lifts and fades, the singularity sinks and grows as you leave the hero.
+  const heroEl = document.querySelector(".hero");
+  const parallax = (y) => {
+    const p = Math.max(0, Math.min(1, y / (heroEl.offsetHeight || innerHeight)));
+    heroEl.style.setProperty("--p", p.toFixed(4));
+  };
+  if (lenis) lenis.on("scroll", (l) => parallax(l.scroll));
+  else if (!reduce) addEventListener("scroll", () => parallax(scrollY), { passive: true });
+
   /* ------------------------------------------------------------ nav: scrolled state + active section */
   const onScroll = () => document.body.classList.toggle("scrolled", scrollY > 40);
   addEventListener("scroll", onScroll, { passive: true }); onScroll();

@@ -1,14 +1,18 @@
-import { cpSync } from "node:fs";
+import { cpSync, mkdirSync } from "node:fs";
 import { defineConfig, type Plugin } from "vite";
 import react from "@vitejs/plugin-react";
 
-/** Worker build: copy site/ (main menu, presentation page) to the top of dist/, next to the demo in dist/demo/. */
+/** Worker build: copy site/ (homepage, presentation page) to the top of dist/, next to the demo in dist/demo/, plus Lenis. */
 function copySite(): Plugin {
   return {
     name: "prfg-copy-site",
     apply: "build",
     closeBundle() {
       cpSync("site", "dist", { recursive: true });
+      // Lenis smooth scrolling for the homepage, shipped with the site (no CDN).
+      mkdirSync("dist/vendor", { recursive: true });
+      cpSync("node_modules/lenis/dist/lenis.min.js", "dist/vendor/lenis.min.js");
+      cpSync("node_modules/lenis/dist/lenis.css", "dist/vendor/lenis.css");
     },
   };
 }
