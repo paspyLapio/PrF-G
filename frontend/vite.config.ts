@@ -13,6 +13,13 @@ function copySite(): Plugin {
       mkdirSync("dist/vendor", { recursive: true });
       cpSync("node_modules/lenis/dist/lenis.min.js", "dist/vendor/lenis.min.js");
       cpSync("node_modules/lenis/dist/lenis.css", "dist/vendor/lenis.css");
+      // pdf.js renders the team's PDF deck inside the Presentation section (legacy build: wider browser support).
+      const pdf = "node_modules/pdfjs-dist/legacy/build";
+      mkdirSync("dist/vendor/pdfjs", { recursive: true });
+      cpSync(`${pdf}/pdf.min.mjs`, "dist/vendor/pdfjs/pdf.min.js");
+      cpSync(`${pdf}/pdf.worker.min.mjs`, "dist/vendor/pdfjs/pdf.worker.min.js");
+      cpSync("node_modules/pdfjs-dist/cmaps", "dist/vendor/pdfjs/cmaps", { recursive: true });
+      cpSync("node_modules/pdfjs-dist/standard_fonts", "dist/vendor/pdfjs/standard_fonts", { recursive: true });
     },
   };
 }

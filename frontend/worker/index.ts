@@ -24,6 +24,8 @@ export interface Env {
   GITHUB_BRANCH?: string;
   /** Folder in the repo that holds the presentation. */
   PRESENTATION_DIR?: string;
+  /** Optional: exact file name in that folder to show, instead of picking automatically. */
+  PRESENTATION_FILE?: string;
 }
 
 const HOP_BY_HOP = ["connection", "keep-alive", "transfer-encoding", "upgrade", "host", "cf-connecting-ip", "x-forwarded-host"];
@@ -66,21 +68,30 @@ async function proxy(request: Request, env: Env, url: URL): Promise<Response> {
 /* ------------------------------------------------------------------ presentation from the repo */
 
 type Kind = "pdf" | "pptx" | "link";
-/** Looked for in this order inside PRESENTATION_DIR. The first one that exists is shown. */
-const CANDIDATES: { name: string; kind: Kind; type: string }[] = [
-  { name: "presentation.pdf", kind: "pdf", type: "application/pdf" },
-  { name: "presentation.pptx", kind: "pptx", type: "application/vnd.openxmlformats-officedocument.presentationml.presentation" },
-  { name: "link.txt", kind: "link", type: "text/plain; charset=utf-8" },
+interface Pick { name: string; kind: Kind; type: string }
+
+/** File kinds in order of preference: a PDF wins over a PowerPoint, which wins over a link. */
+const KINDS: { kind: Kind; test: RegExp; type: string; preferred: string }[] = [
+  { kind: "pdf", test: /\.pdf$/i, type: "application/pdf", preferred: "presentation.pdf" },
+  { kind: "pptx", test: /\.pptx$/i, type: "application/vnd.openxmlformats-officedocument.presentationml.presentation", preferred: "presentation.pptx" },
+  { kind: "link", test: /^link\.txt$/i, type: "text/plain; charset=utf-8", preferred: "link.txt" },
 ];
+
+function classify(name: string): Pick | null {
+  const k = KINDS.find((k) => k.test.test(name));
+  return k ? { name, kind: k.kind, type: k.type } : null;
+}
 
 function repoInfo(env: Env) {
   const repo = (env.GITHUB_REPO ?? "paspyLapio/PrF-G").trim();
   const branch = (env.GITHUB_BRANCH ?? "main").trim();
   const dir = (env.PRESENTATION_DIR ?? "presentation").trim().replace(/^\/|\/$/g, "");
+  const enc = (p: string) => p.split("/").map(encodeURIComponent).join("/");
   return {
     repo, branch, dir,
     repoUrl: `https://github.com/${repo}`,
-    raw: (name: string) => `https://raw.githubusercontent.com/${repo}/${branch}/${dir}/${name}`,
+    raw: (name: string) => `https://raw.githubusercontent.com/${repo}/${enc(branch)}/${enc(dir)}/${encodeURIComponent(name)}`,
+    listUrl: `https://api.github.com/repos/${repo}/contents/${enc(dir)}?ref=${encodeURIComponent(branch)}`,
     uploadUrl: `https://github.com/${repo}/upload/${branch}/${dir}`,
     folderUrl: `https://github.com/${repo}/tree/${branch}/${dir}`,
   };
@@ -89,14 +100,48 @@ function repoInfo(env: Env) {
 /** Short edge cache so a busy demo does not hit GitHub on every view; GitHub itself caches raw files ~5 min. */
 const CF_CACHE = { cacheTtl: 60, cacheEverything: true } as const;
 
-async function findPresentation(env: Env): Promise<{ c: (typeof CANDIDATES)[number]; res: Response } | null> {
-  const r = repoInfo(env);
-  for (const c of CANDIDATES) {
-    const res = await fetch(r.raw(c.name), { cf: CF_CACHE });
-    if (res.ok) return { c, res };
-    await res.body?.cancel();
+/** File names in the presentation folder, via the GitHub API (cached 2 min). null if the API is unavailable. */
+async function listFolder(env: Env): Promise<string[] | null> {
+  try {
+    const res = await fetch(repoInfo(env).listUrl, {
+      headers: { "user-agent": "prf-g-site", accept: "application/vnd.github+json" },
+      cf: { cacheTtl: 120, cacheEverything: true },
+    });
+    if (res.status === 404) return [];
+    if (!res.ok) return null;
+    const items = (await res.json()) as { name: string; type: string }[];
+    return Array.isArray(items) ? items.filter((i) => i.type === "file").map((i) => i.name) : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Which file to show: PRESENTATION_FILE if set, else the best file in the folder, else the standard names. */
+async function choose(env: Env): Promise<Pick | null> {
+  const pinned = (env.PRESENTATION_FILE ?? "").trim();
+  if (pinned) return classify(pinned);
+  const names = await listFolder(env);
+  if (names) {
+    for (const k of KINDS) {
+      const matches = names.filter((n) => k.test.test(n)).sort((a, b) => a.localeCompare(b));
+      if (matches.length) return classify(matches.find((n) => n.toLowerCase() === k.preferred) ?? matches[0]);
+    }
+    return null;
+  }
+  // GitHub API unavailable (rate limit): try the standard names directly.
+  for (const k of KINDS) {
+    const res = await fetch(repoInfo(env).raw(k.preferred), { method: "HEAD", cf: CF_CACHE });
+    if (res.ok) return classify(k.preferred);
   }
   return null;
+}
+
+async function findPresentation(env: Env): Promise<{ c: Pick; res: Response } | null> {
+  const c = await choose(env);
+  if (!c) return null;
+  const res = await fetch(repoInfo(env).raw(c.name), { cf: CF_CACHE });
+  if (!res.ok) { await res.body?.cancel(); return null; }
+  return { c, res };
 }
 
 function firstUrl(text: string): string | null {
@@ -126,13 +171,15 @@ async function presentationFile(env: Env, download: boolean): Promise<Response> 
   const found = await findPresentation(env);
   if (!found || found.c.kind === "link") return json(404, { error: "no presentation file in the repo" });
   const { c, res } = found;
-  return new Response(res.body, {
-    headers: {
-      "content-type": c.type,
-      "content-disposition": `${download ? "attachment" : "inline"}; filename="PrF-G-${c.name}"`,
-      "cache-control": "public, max-age=60",
-    },
+  const safe = c.name.replace(/[^\w.\- ]+/g, "_");
+  const headers = new Headers({
+    "content-type": c.type,
+    "content-disposition": `${download ? "attachment" : "inline"}; filename="${safe}"; filename*=UTF-8''${encodeURIComponent(c.name)}`,
+    "cache-control": "public, max-age=60",
   });
+  const len = res.headers.get("content-length");
+  if (len) headers.set("content-length", len); // lets the PDF viewer show progress
+  return new Response(res.body, { headers });
 }
 
 /* ------------------------------------------------------------------ router */

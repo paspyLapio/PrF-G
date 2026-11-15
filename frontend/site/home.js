@@ -79,7 +79,7 @@
       dpr = Math.min(devicePixelRatio || 1, 2);
       w = cv.clientWidth; h = cv.clientHeight;
       cv.width = w * dpr; cv.height = h * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      R = Math.min(w, h) * (w < 700 ? 0.15 : 0.13);
+      R = Math.min(w, h) * (w <= 560 ? 0.15 : 0.13); // keep in step with .hero-in .kicker in home.css
       cx = w / 2; cy = h * 0.45;
       if (!P.length) for (let i = 0; i < N; i++) P.push(spawn({}, false));
     }
@@ -143,7 +143,103 @@
       if (run && !was && !reduce) { last = 0; requestAnimationFrame(frame); }
     }).observe($(".hero"));
     requestAnimationFrame(frame);
-  })();
+  
+  /* ============================================================ 03 PRESENTATION: the real PDF deck, in the slides */
+  async function liveDeck(url, label, name) {
+    const deck = $("#deck"), s1 = $(".s1", deck), s2 = $(".s2", deck), s3 = $(".s3", deck);
+    const ctl = $("#deckctl"), pg = $("#pg"), prev = $("#prev"), next = $("#next");
+    const original = [s1, s2, s3].map((x) => x.innerHTML);
+    const restore = (why) => {
+      deck.classList.remove("live"); ctl.hidden = true;
+      [s1, s2, s3].forEach((x, i) => { x.innerHTML = original[i]; x.style.visibility = ""; });
+      label.textContent = `Deck ready · ${name} (${why})`;
+    };
+
+    deck.classList.add("live");
+    [s1, s2, s3].forEach((x) => (x.innerHTML = '<div class="pagewrap"></div>'));
+    const load = document.createElement("div");
+    load.className = "pageload"; load.innerHTML = "<span>Loading deck…</span><i><b></b></i>";
+    s1.appendChild(load);
+
+    let pdf;
+    try {
+      const lib = await import("/vendor/pdfjs/pdf.min.js");
+      lib.GlobalWorkerOptions.workerSrc = "/vendor/pdfjs/pdf.worker.min.js";
+      const task = lib.getDocument({ url, cMapUrl: "/vendor/pdfjs/cmaps/", cMapPacked: true, standardFontDataUrl: "/vendor/pdfjs/standard_fonts/" });
+      task.onProgress = ({ loaded, total }) => { if (total) load.style.setProperty("--pct", `${Math.round((loaded / total) * 100)}%`); };
+      pdf = await task.promise;
+    } catch (err) {
+      console.warn("PrF-G deck preview failed", err);
+      return restore("open it to view");
+    }
+
+    const N = pdf.numPages;
+    const v1 = (await pdf.getPage(1)).getViewport({ scale: 1 });
+    deck.style.setProperty("--ar", `${v1.width} / ${v1.height}`);
+    deck.style.setProperty("--arn", (v1.width / v1.height).toFixed(4)); // caps tall (portrait) decks to the screen height
+    s1.setAttribute("aria-hidden", "false"); s1.setAttribute("role", "img"); s1.title = "Click for the next slide";
+
+    // Each page is rendered once per width and kept; the slots get copies.
+    const cache = new Map();
+    const dpr = Math.min(devicePixelRatio || 1, 2);
+    function page(i, w) {
+      const key = `${i}@${w}`;
+      if (!cache.has(key)) cache.set(key, (async () => {
+        const p = await pdf.getPage(i), base = p.getViewport({ scale: 1 });
+        const vp = p.getViewport({ scale: (w * dpr) / base.width });
+        const c = document.createElement("canvas");
+        c.width = Math.round(vp.width); c.height = Math.round(vp.height);
+        await p.render({ canvas: c, canvasContext: c.getContext("2d"), viewport: vp }).promise;
+        return c;
+      })());
+      return cache.get(key);
+    }
+    async function put(slot, i, w) {
+      const wrap = $(".pagewrap", slot);
+      if (i > N) { slot.style.visibility = "hidden"; wrap.replaceChildren(); return; }
+      slot.style.visibility = "";
+      const src = await page(i, w), c = document.createElement("canvas");
+      c.width = src.width; c.height = src.height; c.getContext("2d").drawImage(src, 0, 0);
+      wrap.replaceChildren(c);
+    }
+
+    let n = 1, busy = false;
+    async function show(dir = 0) {
+      if (busy) return; busy = true;
+      const w = Math.round(s1.clientWidth), wrap = $(".pagewrap", s1), anim = dir && !reduce;
+      if (anim) await wrap.animate([{ transform: "none", opacity: 1 }, { transform: `translateX(${-dir * 48}px) rotate(${-dir * 2.5}deg)`, opacity: 0 }], { duration: 170, easing: "ease-in" }).finished;
+      await put(s1, n, w);
+      load.remove();
+      if (anim) wrap.animate([{ transform: `translateX(${dir * 48}px)`, opacity: 0 }, { transform: "none", opacity: 1 }], { duration: 240, easing: "cubic-bezier(.2,.7,.1,1)" });
+      s1.setAttribute("aria-label", `Slide ${n} of ${N}`);
+      pg.textContent = `${n} / ${N}`; prev.disabled = n === 1; next.disabled = n === N;
+      busy = false;
+      put(s2, n + 1, w); put(s3, n + 2, w);
+      if (n + 3 <= N) page(n + 3, w); // warm the next one
+    }
+    const go = (d) => { const to = Math.max(1, Math.min(N, n + d)); if (to !== n && !busy) { n = to; show(d); } };
+
+    prev.onclick = () => go(-1);
+    next.onclick = () => go(1);
+    s1.onclick = () => go(n === N ? -(N - 1) : 1); // last slide loops back to the start
+    addEventListener("keydown", (e) => {
+      if (document.body.dataset.active !== "presentation" || e.target.closest("input, textarea")) return;
+      if (e.key === "ArrowRight" || e.key === "PageDown") { go(1); e.preventDefault(); }
+      if (e.key === "ArrowLeft" || e.key === "PageUp") { go(-1); e.preventDefault(); }
+    });
+    let x0 = null; // swipe on touch screens
+    s1.addEventListener("touchstart", (e) => (x0 = e.touches[0].clientX), { passive: true });
+    s1.addEventListener("touchend", (e) => {
+      if (x0 === null) return;
+      const dx = e.changedTouches[0].clientX - x0; x0 = null;
+      if (Math.abs(dx) > 40) { go(dx < 0 ? 1 : -1); e.preventDefault(); }
+    });
+    let rt; addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(() => { cache.clear(); show(0); }, 250); });
+
+    ctl.hidden = false;
+    show(0);
+  }
+})();
 
   /* ============================================================ 01 REPO: terminal + live commits */
   async function repoIntro() {
@@ -258,10 +354,107 @@
     if (!d) { label.textContent = "Deck status unavailable right now"; return; }
     if (d.kind === "pdf" || d.kind === "pptx") {
       box.className = "deckstate reveal in ready"; label.textContent = `Deck ready · ${d.name}`; $("#dl").hidden = false;
+      if (d.kind === "pdf") liveDeck(d.file, label, d.name);
     } else if (d.kind === "link") {
       box.className = "deckstate reveal in ready"; label.textContent = `Deck ready · ${new URL(d.url).hostname}`;
     } else {
       box.className = "deckstate reveal in soon"; label.textContent = "Deck coming soon";
     }
+  }
+
+  /* ============================================================ 03 PRESENTATION: the real PDF deck, in the slides */
+  async function liveDeck(url, label, name) {
+    const deck = $("#deck"), s1 = $(".s1", deck), s2 = $(".s2", deck), s3 = $(".s3", deck);
+    const ctl = $("#deckctl"), pg = $("#pg"), prev = $("#prev"), next = $("#next");
+    const original = [s1, s2, s3].map((x) => x.innerHTML);
+    const restore = (why) => {
+      deck.classList.remove("live"); ctl.hidden = true;
+      [s1, s2, s3].forEach((x, i) => { x.innerHTML = original[i]; x.style.visibility = ""; });
+      label.textContent = `Deck ready · ${name} (${why})`;
+    };
+
+    deck.classList.add("live");
+    [s1, s2, s3].forEach((x) => (x.innerHTML = '<div class="pagewrap"></div>'));
+    const load = document.createElement("div");
+    load.className = "pageload"; load.innerHTML = "<span>Loading deck…</span><i><b></b></i>";
+    s1.appendChild(load);
+
+    let pdf;
+    try {
+      const lib = await import("/vendor/pdfjs/pdf.min.js");
+      lib.GlobalWorkerOptions.workerSrc = "/vendor/pdfjs/pdf.worker.min.js";
+      const task = lib.getDocument({ url, cMapUrl: "/vendor/pdfjs/cmaps/", cMapPacked: true, standardFontDataUrl: "/vendor/pdfjs/standard_fonts/" });
+      task.onProgress = ({ loaded, total }) => { if (total) load.style.setProperty("--pct", `${Math.round((loaded / total) * 100)}%`); };
+      pdf = await task.promise;
+    } catch (err) {
+      console.warn("PrF-G deck preview failed", err);
+      return restore("open it to view");
+    }
+
+    const N = pdf.numPages;
+    const v1 = (await pdf.getPage(1)).getViewport({ scale: 1 });
+    deck.style.setProperty("--ar", `${v1.width} / ${v1.height}`);
+    deck.style.setProperty("--arn", (v1.width / v1.height).toFixed(4)); // caps tall (portrait) decks to the screen height
+    s1.setAttribute("aria-hidden", "false"); s1.setAttribute("role", "img"); s1.title = "Click for the next slide";
+
+    // Each page is rendered once per width and kept; the slots get copies.
+    const cache = new Map();
+    const dpr = Math.min(devicePixelRatio || 1, 2);
+    function page(i, w) {
+      const key = `${i}@${w}`;
+      if (!cache.has(key)) cache.set(key, (async () => {
+        const p = await pdf.getPage(i), base = p.getViewport({ scale: 1 });
+        const vp = p.getViewport({ scale: (w * dpr) / base.width });
+        const c = document.createElement("canvas");
+        c.width = Math.round(vp.width); c.height = Math.round(vp.height);
+        await p.render({ canvas: c, canvasContext: c.getContext("2d"), viewport: vp }).promise;
+        return c;
+      })());
+      return cache.get(key);
+    }
+    async function put(slot, i, w) {
+      const wrap = $(".pagewrap", slot);
+      if (i > N) { slot.style.visibility = "hidden"; wrap.replaceChildren(); return; }
+      slot.style.visibility = "";
+      const src = await page(i, w), c = document.createElement("canvas");
+      c.width = src.width; c.height = src.height; c.getContext("2d").drawImage(src, 0, 0);
+      wrap.replaceChildren(c);
+    }
+
+    let n = 1, busy = false;
+    async function show(dir = 0) {
+      if (busy) return; busy = true;
+      const w = Math.round(s1.clientWidth), wrap = $(".pagewrap", s1), anim = dir && !reduce;
+      if (anim) await wrap.animate([{ transform: "none", opacity: 1 }, { transform: `translateX(${-dir * 48}px) rotate(${-dir * 2.5}deg)`, opacity: 0 }], { duration: 170, easing: "ease-in" }).finished;
+      await put(s1, n, w);
+      load.remove();
+      if (anim) wrap.animate([{ transform: `translateX(${dir * 48}px)`, opacity: 0 }, { transform: "none", opacity: 1 }], { duration: 240, easing: "cubic-bezier(.2,.7,.1,1)" });
+      s1.setAttribute("aria-label", `Slide ${n} of ${N}`);
+      pg.textContent = `${n} / ${N}`; prev.disabled = n === 1; next.disabled = n === N;
+      busy = false;
+      put(s2, n + 1, w); put(s3, n + 2, w);
+      if (n + 3 <= N) page(n + 3, w); // warm the next one
+    }
+    const go = (d) => { const to = Math.max(1, Math.min(N, n + d)); if (to !== n && !busy) { n = to; show(d); } };
+
+    prev.onclick = () => go(-1);
+    next.onclick = () => go(1);
+    s1.onclick = () => go(n === N ? -(N - 1) : 1); // last slide loops back to the start
+    addEventListener("keydown", (e) => {
+      if (document.body.dataset.active !== "presentation" || e.target.closest("input, textarea")) return;
+      if (e.key === "ArrowRight" || e.key === "PageDown") { go(1); e.preventDefault(); }
+      if (e.key === "ArrowLeft" || e.key === "PageUp") { go(-1); e.preventDefault(); }
+    });
+    let x0 = null; // swipe on touch screens
+    s1.addEventListener("touchstart", (e) => (x0 = e.touches[0].clientX), { passive: true });
+    s1.addEventListener("touchend", (e) => {
+      if (x0 === null) return;
+      const dx = e.changedTouches[0].clientX - x0; x0 = null;
+      if (Math.abs(dx) > 40) { go(dx < 0 ? 1 : -1); e.preventDefault(); }
+    });
+    let rt; addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(() => { cache.clear(); show(0); }, 250); });
+
+    ctl.hidden = false;
+    show(0);
   }
 })();

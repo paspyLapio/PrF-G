@@ -23,7 +23,9 @@
     // Where the presentation and the Repository button point. The repo must be public.
     "GITHUB_REPO": "paspyLapio/PrF-G",
     "GITHUB_BRANCH": "main",
-    "PRESENTATION_DIR": "presentation"
+    "PRESENTATION_DIR": "presentation",
+    // Optional: exact file name to show. Empty = pick automatically (any .pdf, else .pptx, else link.txt).
+    "PRESENTATION_FILE": ""
   },
   "observability": { "enabled": true }
 }

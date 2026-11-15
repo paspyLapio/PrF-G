@@ -51,9 +51,11 @@ body[data-active="presentation"] { --nav: #ff8a2a; }
 .hero { --p: 0; }
 #hole { transform: translateY(calc(var(--p) * 90px)) scale(calc(1 + var(--p) * .12)); will-change: transform; }
 .hero-in { position: absolute; z-index: 2; left: 0; right: 0; top: 45%; transform: translateY(calc(-50% - var(--p) * 140px)); opacity: calc(1 - var(--p) * 1.25); text-align: center; padding: 0 24px; }
-.kicker { font-size: 12px; letter-spacing: .4em; text-transform: uppercase; color: #a79fd0; }
+/* Kicker sits above the singularity's lensed ring (ring radius is ~13vmin, see home.js). */
+.kicker { font-size: 12px; letter-spacing: .4em; text-transform: uppercase; color: #cfc8f2; text-shadow: 0 0 18px #05040a, 0 0 6px #05040a; }
+.hero-in .kicker { position: absolute; left: 0; right: 0; bottom: calc(100% + 13vmin + 18px); }
 .kicker span { color: #6a5fd6; margin: 0 .5em; }
-.hero h1 { margin: 22px 0 26px; font: 900 clamp(40px, 10.5vw, 168px)/.9 var(--f-hero); letter-spacing: -.02em; text-transform: uppercase; }
+.hero h1 { margin: 0; font: 900 clamp(40px, 10.5vw, 168px)/.9 var(--f-hero); letter-spacing: -.02em; text-transform: uppercase; }
 .hero h1 .word {
   display: inline-block; background: linear-gradient(100deg, #ffffff 0%, #d9d3ff 35%, #8f7dff 55%, #ffb36b 78%, #ffffff 100%);
   background-size: 220% 100%; -webkit-background-clip: text; background-clip: text; color: transparent;
@@ -217,6 +219,31 @@ body[data-active="presentation"] { --nav: #ff8a2a; }
 .embers i:nth-child(9) { left: 90%; animation-delay: 2s !important; } .embers i:nth-child(10) { left: 30%; animation-delay: 4.5s !important; }
 @keyframes rise { 0% { transform: translate(0, 0) scale(1); opacity: 0; } 10% { opacity: .9; } 100% { transform: translate(24px, -420px) scale(.2); opacity: 0; } }
 
+/* Live deck: the team's PDF rendered into the fanned slides (home.js, pdf.js). */
+.deck.live { height: auto; aspect-ratio: auto; padding: 90px 0 30px; width: min(100%, calc(66svh * var(--arn, 1.78))); margin: 0 auto; }
+.deck.live .slide { position: relative; left: auto; top: auto; width: 100%; aspect-ratio: var(--ar, 16 / 9); padding: 0; overflow: hidden; background: #1a0904; }
+.deck.live .s2, .deck.live .s3 { position: absolute; left: 0; top: 90px; }
+.pres.in .deck.live .s1 { transform: none; }
+.pres.in .deck.live .s2 { transform: translate(22px, -26px) rotateZ(2.6deg); }
+.pres.in .deck.live .s3 { transform: translate(44px, -52px) rotateZ(5.2deg); }
+.deck.live:hover .s2 { transform: translate(30px, -38px) rotateZ(3.6deg); }
+.deck.live:hover .s3 { transform: translate(60px, -74px) rotateZ(7deg); }
+.deck.live .s2::after, .deck.live .s3::after { content: ""; position: absolute; inset: 0; background: rgba(18, 6, 4, .55); }
+.deck.live .s1 { cursor: pointer; box-shadow: 0 40px 90px -30px rgba(0,0,0,.9), 0 0 0 1px rgba(255,122,26,.55), 0 0 60px -10px rgba(255,122,26,.35); }
+.pagewrap { position: absolute; inset: 0; }
+.pagewrap canvas { width: 100%; height: 100%; display: block; background: #fff; }
+.pageload { position: absolute; inset: 0; display: grid; place-content: center; gap: 12px; text-align: center; font: 12px var(--f-mono); color: var(--ink2); }
+.pageload i { display: block; width: 160px; height: 3px; background: rgba(255,122,26,.15); }
+.pageload i b { display: block; height: 100%; width: var(--pct, 0%); background: var(--a); transition: width .2s; }
+.deckctl { display: flex; align-items: center; justify-content: center; gap: 14px; margin-top: 6px; }
+.deckctl button { width: 44px; height: 44px; border-radius: 50%; border: 1px solid rgba(255,122,26,.45); background: rgba(255,122,26,.08); color: var(--a2); font: 600 22px/1 var(--f-disp); cursor: pointer; transition: background .2s, transform .2s; }
+.deckctl button:hover:not(:disabled) { background: var(--a); color: var(--on); transform: scale(1.06); }
+.deckctl button:disabled { opacity: .35; cursor: default; }
+.deckctl #pg { min-width: 70px; text-align: center; color: var(--ink); font-size: 15px; letter-spacing: .08em; }
+.deckctl .full { margin-left: 8px; font: 600 12px var(--f-disp); letter-spacing: .14em; text-transform: uppercase; color: var(--a); text-decoration: none; }
+.deckctl .full:hover { text-decoration: underline; }
+@media (max-width: 560px) { .deck.live { padding-top: 30px; } .deck.live .s2, .deck.live .s3 { display: none; } }
+
 /* ---------------------------------------------------------------- footer */
 .foot { padding: 90px 28px calc(40px + env(safe-area-inset-bottom, 0px)); text-align: center; background: linear-gradient(#120604, #05040a 40%); color: #8f88ad; }
 .foot .fw { font: 900 clamp(34px, 7vw, 92px)/1 var(--f-hero); text-transform: uppercase; letter-spacing: -.02em; color: transparent; -webkit-text-stroke: 1px rgba(236, 234, 245, .22); }
@@ -242,6 +269,7 @@ body[data-active="presentation"] { --nav: #ff8a2a; }
   .toast { position: static; max-width: none; margin-top: 12px; display: none; }
   .toast.show { display: flex; }
   .kicker { letter-spacing: .22em; font-size: 10.5px; }
+  .hero-in .kicker { bottom: calc(100% + 15vmin + 14px); }
   .hero h1 { font-size: 11.2vw; }
   .s3, .s2 { display: none; }
 }

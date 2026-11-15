@@ -148,10 +148,10 @@
         </div>
 
         <div class="vis reveal">
-          <div class="deck" aria-hidden="true">
-            <div class="slide s3"><div class="sh">NASA evidence</div><div class="bars"><i style="--h:40%"></i><i style="--h:62%"></i><i style="--h:55%"></i><i style="--h:80%"></i><i style="--h:70%"></i><i style="--h:92%"></i></div><div class="sf">BASS-II · SAFFIRE · drop tower</div></div>
-            <div class="slide s2"><div class="sh">How the crew uses it</div><div class="rows"><span></span><span></span><span></span><span class="hot"></span></div><div class="sf">Status → reasons → options</div></div>
-            <div class="slide s1">
+          <div class="deck" id="deck">
+            <div class="slide s3" aria-hidden="true"><div class="sh">NASA evidence</div><div class="bars"><i style="--h:40%"></i><i style="--h:62%"></i><i style="--h:55%"></i><i style="--h:80%"></i><i style="--h:70%"></i><i style="--h:92%"></i></div><div class="sf">BASS-II · SAFFIRE · drop tower</div></div>
+            <div class="slide s2" aria-hidden="true"><div class="sh">How the crew uses it</div><div class="rows"><span></span><span></span><span></span><span class="hot"></span></div><div class="sf">Status → reasons → options</div></div>
+            <div class="slide s1" aria-hidden="true">
               <div><div class="sh">PrF-G</div><div class="ssub">How far is this cabin from conditions NASA has tested fire in?</div></div>
               <div class="gauge">
                 <svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="48" class="gbg"/><circle cx="60" cy="60" r="48" class="gfg" id="gfg"/></svg>
@@ -159,7 +159,14 @@
               </div>
               <div class="sf">Prevent Fire-Guard</div>
             </div>
-            <div class="embers"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+            <div class="embers" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+          </div>
+          <!-- Shown when the repo has a PDF: the real deck, rendered in the slides above with pdf.js. -->
+          <div class="deckctl" id="deckctl" hidden>
+            <button type="button" id="prev" aria-label="Previous slide">‹</button>
+            <span class="mono" id="pg" aria-live="polite">1 / 1</span>
+            <button type="button" id="next" aria-label="Next slide">›</button>
+            <a href="/presentation/" class="full">Full screen ↗</a>
           </div>
         </div>
       </div>
