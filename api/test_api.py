@@ -169,6 +169,12 @@ check("/mlp untrained material -> no score", s == 200 and d["per_material"][1]["
 s, d = call("GET", "/mlp?o2_pct=34&pressure_psi=8.2&gravity_g=0.166&materials=pmma")
 check("/mlp lunar surface flagged out of domain (O2, pressure, gravity)", s == 200
       and not d["per_material"][0]["in_domain"] and len(d["per_material"][0]["issues"]) == 3)
+check("/mlp lunar surface: no score or prediction is returned (untested)", s == 200
+      and d["per_material"][0]["scores"] is None and d["per_material"][0]["predicted"] is None
+      and d["per_material"][0]["untested"] is True)
+s, d = call("GET", "/mlp?o2_pct=38&pressure_psi=8.2&gravity_g=0&materials=pmma,cotton_jersey")
+check("/mlp out-of-range O2 and pressure, every material: no scores", s == 200
+      and all(r["scores"] is None for r in d["per_material"]))
 s1, a1 = call("GET", "/index?o2_pct=34&pressure_psi=8.2&gravity_g=0.166&materials=pmma")
 call("GET", "/mlp?o2_pct=34&materials=pmma")
 s2, a2 = call("GET", "/index?o2_pct=34&pressure_psi=8.2&gravity_g=0.166&materials=pmma")

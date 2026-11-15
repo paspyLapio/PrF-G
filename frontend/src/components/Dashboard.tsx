@@ -131,9 +131,9 @@ function NNTab({ sim }: { sim: Simulation }) {
               <tr key={item.label}>
                 <td>{item.label}</td>
                 <td><span style={{ color: MC[s.st] }}>{s.lab}</span></td>
-                <td className="mono">{!nn || !nn.scores ? <span className="muted">no training data</span>
+                <td className="mono">{nn?.untested && nn.family ? <span className="muted">untested: no score shown</span> : !nn || !nn.scores ? <span className="muted">no training data</span>
                   : <><span className="nnbar"><i style={{ width: `${nn.scores.yes * 100}%` }} /></span> {nn.predicted === "yes" ? "likely" : "unlikely"} · score {nn.scores.yes.toFixed(2)}</>}</td>
-                <td>{!nn || !nn.scores ? "—" : nn.in_domain ? <span style={{ color: "var(--ok)" }}>inside</span> : <span style={{ color: "var(--warn)" }} title={nn.issues.join("; ")}>outside: {nn.issues[0]}</span>}</td>
+                <td>{!nn ? "—" : nn.untested ? <span style={{ color: "var(--warn)" }} title={nn.issues.join("; ")}>outside: {nn.issues[0]}</span> : !nn.scores ? "—" : nn.in_domain ? <span style={{ color: "var(--ok)" }}>inside</span> : <span style={{ color: "var(--warn)" }} title={nn.issues.join("; ")}>outside: {nn.issues[0]}</span>}</td>
               </tr>))}</tbody>
           </table>
           <p className="muted" style={{ fontSize: 12, margin: "8px 0 0" }}>{mlp.note} Where the two disagree, the crew sees both; the status still comes from the NASA evidence.</p>

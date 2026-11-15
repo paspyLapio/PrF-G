@@ -27,9 +27,10 @@ class Evaluator:
         matrix = self.confusion_matrix(actual, predicted)
         accuracy = float(np.mean(actual == predicted))
         metrics = {"accuracy": accuracy, "confusion_matrix": matrix.tolist(), "per_class": {}}
-        print("\\nConfusion matrix:")
+        print("\nConfusion matrix:")
         print(matrix)
-        print(f"\\nAccuracy: {accuracy:.4f}")
+        majority = float(matrix.sum(axis=1).max() / matrix.sum())
+        print(f"\nAccuracy: {accuracy:.4f}  (always predicting the most common class: {majority:.4f})")
         for i, name in enumerate(self.classes):
             tp = matrix[i, i]
             fp, fn = matrix[:, i].sum() - tp, matrix[i, :].sum() - tp
@@ -40,5 +41,8 @@ class Evaluator:
                 "precision": float(precision), "recall": float(recall),
                 "f1": float(f1), "support": int(matrix[i, :].sum())
             }
-            print(f"\\nClass: {name}\\nPrecision: {precision:.4f}\\nRecall: {recall:.4f}\\nF1-score: {f1:.4f}")
+            print(f"\nClass: {name}\nPrecision: {precision:.4f}\nRecall: {recall:.4f}\nF1-score: {f1:.4f}")
+        metrics["majority_baseline"] = majority
+        metrics["balanced_accuracy"] = float(np.mean([m["recall"] for m in metrics["per_class"].values()]))
+        print(f"\nBalanced accuracy (mean recall): {metrics['balanced_accuracy']:.4f}")
         return metrics

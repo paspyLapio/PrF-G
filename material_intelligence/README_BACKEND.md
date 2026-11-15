@@ -3,7 +3,7 @@
 This package is a backend-focused continuation of the uploaded project. Existing UI files were not present in the upload, so no frontend changes were made.
 
 ## Run
-1. Install `numpy` and `pandas`.
+1. `pip install -r requirements.txt` (numpy, pandas, scikit-learn).
 2. Supply the prepared model-input CSV at `data/runs.csv` (it stays local).
    The trainer uses only configured features and the target from this table;
    supporting/reference CSVs with different schemas are not concatenated.
