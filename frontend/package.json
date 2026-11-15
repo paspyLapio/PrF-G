@@ -9,8 +9,8 @@
     "preview": "vite preview",
     "typecheck": "tsc -b --pretty",
     "build:worker": "tsc -b && tsc -p worker && vite build --mode worker",
-    "dev:worker": "npm run build:worker && wrangler dev",
-    "deploy": "npm run build:worker && wrangler deploy"
+    "dev:worker": "cd .. && wrangler dev",
+    "deploy": "cd .. && wrangler deploy"
   },
   "dependencies": {
     "react": "18.3.1",

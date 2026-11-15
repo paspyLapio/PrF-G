@@ -32,16 +32,17 @@ npm run deploy            # builds with VITE_API_URL=/api, then wrangler deploy
 npm run dev:worker        # same thing locally at http://localhost:8787
 ```
 
-- **Backend URL**: `BACKEND_URL` in `wrangler.jsonc` (default `https://prf-g-api.onrender.com`). Set it to `""` to
+- **Backend URL**: `BACKEND_URL` in the root `wrangler.jsonc` (default `https://prf-g-api.onrender.com`). Set it to `""` to
   run on the on-board engine only. Change it without redeploying code under Worker → Settings → Variables.
 - **Sleeping backend**: if the backend takes longer than `BACKEND_TIMEOUT_MS` (8 s) the Worker answers 503 and the app
   switches to its on-board engine, as it does with no backend. Open the backend's `/docs` a minute before presenting.
-- **Deploy from GitHub instead**: Cloudflare dashboard → Workers & Pages → Create → Import a repository → this repo,
-  root directory `frontend`, build command `npm run build:worker`, deploy command `npx wrangler deploy`.
+- **Auto-deploy from GitHub**: the repo is connected to Cloudflare Workers Builds. With the default settings (root
+  directory `/`, no build command, deploy command `npx wrangler deploy`) every push to `main` builds and deploys the
+  site; the build runs from `build.command` in the root `wrangler.jsonc`.
 - **Presentation**: put `presentation.pdf` (or `presentation.pptx`, or `link.txt` with a Google Slides/Canva link)
   in the repo's `presentation/` folder. The repo must stay public; change `GITHUB_REPO`, `GITHUB_BRANCH`,
   `PRESENTATION_DIR` in `wrangler.jsonc` if it moves.
-- Files: `wrangler.jsonc` (config), `worker/index.ts` (routes, presentation, `/api` proxy), `site/` (menu and
+- Files: `../wrangler.jsonc` (config, at the repo root), `worker/index.ts` (routes, presentation, `/api` proxy), `site/` (menu and
   presentation pages), `.env.worker` (build mode `worker`: demo goes to `dist/demo`, `site/` is copied around it).
   `npm run build` without `--mode worker` is unchanged, so the Render static site keeps working.
 
