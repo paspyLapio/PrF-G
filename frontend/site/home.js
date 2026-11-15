@@ -177,7 +177,7 @@
     const v1 = (await pdf.getPage(1)).getViewport({ scale: 1 });
     deck.style.setProperty("--ar", `${v1.width} / ${v1.height}`);
     deck.style.setProperty("--arn", (v1.width / v1.height).toFixed(4)); // caps tall (portrait) decks to the screen height
-    s1.setAttribute("aria-hidden", "false"); s1.setAttribute("role", "img"); s1.title = "Click for the next slide";
+    s1.setAttribute("aria-hidden", "false"); s1.setAttribute("role", "img"); s1.title = "Enter / click: next slide · Shift+Enter: back";
 
     // Each page is rendered once per width and kept; the slots get copies.
     const cache = new Map();
@@ -223,9 +223,12 @@
     next.onclick = () => go(1);
     s1.onclick = () => go(n === N ? -(N - 1) : 1); // last slide loops back to the start
     addEventListener("keydown", (e) => {
-      if (document.body.dataset.active !== "presentation" || e.target.closest("input, textarea")) return;
-      if (e.key === "ArrowRight" || e.key === "PageDown") { go(1); e.preventDefault(); }
-      if (e.key === "ArrowLeft" || e.key === "PageUp") { go(-1); e.preventDefault(); }
+      if (document.body.dataset.active !== "presentation" || e.target.closest("input, textarea, select")) return;
+      if (e.key === "Enter" && e.target.closest("a, button")) return; // let a focused link/button do its own thing
+      const back = e.key === "ArrowLeft" || e.key === "PageUp" || e.key === "Backspace" || (e.key === "Enter" && e.shiftKey);
+      const fwd = !back && (e.key === "Enter" || e.key === " " || e.key === "ArrowRight" || e.key === "PageDown");
+      if (fwd) { go(1); e.preventDefault(); }
+      if (back) { go(-1); e.preventDefault(); }
     });
     let x0 = null; // swipe on touch screens
     s1.addEventListener("touchstart", (e) => (x0 = e.touches[0].clientX), { passive: true });
@@ -395,7 +398,7 @@
     const v1 = (await pdf.getPage(1)).getViewport({ scale: 1 });
     deck.style.setProperty("--ar", `${v1.width} / ${v1.height}`);
     deck.style.setProperty("--arn", (v1.width / v1.height).toFixed(4)); // caps tall (portrait) decks to the screen height
-    s1.setAttribute("aria-hidden", "false"); s1.setAttribute("role", "img"); s1.title = "Click for the next slide";
+    s1.setAttribute("aria-hidden", "false"); s1.setAttribute("role", "img"); s1.title = "Enter / click: next slide · Shift+Enter: back";
 
     // Each page is rendered once per width and kept; the slots get copies.
     const cache = new Map();
@@ -441,9 +444,12 @@
     next.onclick = () => go(1);
     s1.onclick = () => go(n === N ? -(N - 1) : 1); // last slide loops back to the start
     addEventListener("keydown", (e) => {
-      if (document.body.dataset.active !== "presentation" || e.target.closest("input, textarea")) return;
-      if (e.key === "ArrowRight" || e.key === "PageDown") { go(1); e.preventDefault(); }
-      if (e.key === "ArrowLeft" || e.key === "PageUp") { go(-1); e.preventDefault(); }
+      if (document.body.dataset.active !== "presentation" || e.target.closest("input, textarea, select")) return;
+      if (e.key === "Enter" && e.target.closest("a, button")) return; // let a focused link/button do its own thing
+      const back = e.key === "ArrowLeft" || e.key === "PageUp" || e.key === "Backspace" || (e.key === "Enter" && e.shiftKey);
+      const fwd = !back && (e.key === "Enter" || e.key === " " || e.key === "ArrowRight" || e.key === "PageDown");
+      if (fwd) { go(1); e.preventDefault(); }
+      if (back) { go(-1); e.preventDefault(); }
     });
     let x0 = null; // swipe on touch screens
     s1.addEventListener("touchstart", (e) => (x0 = e.touches[0].clientX), { passive: true });
