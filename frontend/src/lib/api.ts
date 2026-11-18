@@ -2,6 +2,7 @@
  * Live connection to the PrF-G FastAPI backend (api/). The base URL comes from VITE_API_URL at build time.
  * If the API is missing or unreachable, the app keeps working on its built-in copy of the same engine.
  */
+import { assessLocal } from "./mlpLocal";
 import type { Cabin, Item, Status } from "./engine";
 
 export const API_URL: string = (import.meta.env.VITE_API_URL as string | undefined)?.replace(/\/$/, "") ?? "";
@@ -54,8 +55,15 @@ export async function ask(question: string, cabin: Cabin, design: number, g: num
 /** P3's neural network (GET /mlp): a second opinion, read only by the dashboard's Neural network tab. */
 export interface MLPRow { material: string; family: string | null; training_rows?: number; scores: Record<string, number> | null; predicted: string | null; in_domain: boolean; untested?: boolean; issues: string[] }
 export interface MLPResult { model: string; per_material: MLPRow[]; firewall: string; note: string }
-export async function fetchMLP(cabin: Cabin, g: number, inv: Item[], signal?: AbortSignal): Promise<MLPResult> {
+export async function fetchMLPBackend(cabin: Cabin, g: number, inv: Item[], signal?: AbortSignal): Promise<MLPResult> {
   const r = await fetch(`${API_URL}/mlp?${params(cabin, 0, g, inv)}`, { signal });
   if (!r.ok) throw new Error(`API ${r.status}`);
   return (await r.json()) as MLPResult;
+}
+
+export async function fetchMLP(cabin: Cabin, g: number, inv: Item[], _signal?: AbortSignal): Promise<MLPResult> {
+  // Runs in the browser (no backend needed): see mlpLocal.ts
+  const exposed = inv.filter((i) => i.exposed);
+  const pm = exposed.find((i) => i.key === "pmma");
+  return assessLocal(cabin.o2, cabin.psia, cabin.u, g, exposed.map((i) => i.key), pm?.t ?? null, pm?.sides ?? "one");
 }

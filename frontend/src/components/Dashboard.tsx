@@ -101,12 +101,11 @@ function NNTab({ sim }: { sim: Simulation }) {
   useEffect(() => onNN(() => force((x) => x + 1)), []);
   // poll the backend MLP while this tab is open (it never feeds back into the simulation)
   useEffect(() => {
-    if (!API_URL) return;
     let alive = true, ctl: AbortController | null = null;
     const tick = () => {
       ctl?.abort(); ctl = new AbortController();
       fetchMLP(sim.cabin, sim.phase.gval, sim.inv, ctl.signal).then((r) => { if (alive) { setMlp(r); setErr(null); } })
-        .catch((e) => { if (alive && e.name !== "AbortError") setErr("Backend unreachable"); });
+        .catch((e) => { if (alive && e.name !== "AbortError") setErr(String(e?.message || e)); });
     };
     tick(); const id = setInterval(tick, 2000);
     return () => { alive = false; clearInterval(id); ctl?.abort(); };
